@@ -6,23 +6,38 @@ Hey all. In the last year or so I had several discussions about the question:
 
 While there are thousands of tutorials out there on how to do this or achieve that in Blender there are hardly any talking about how to use Blender in a Production Pipeline. But for Studios wanting to integrate Blender, this is almost the first question that needs an answer.
 
-There is not really an official document somewhere that gives you an overview. So I though it's time to start a little repository to cover the frequently asked questions. Ideally this should be shared knowledge base that grows over time. I strongly encourage everyone to contribute to this document. I thought the easiest for now would be to manage this with a git repository.
+There is not really an official document somewhere that gives you an overview. So I though it's time to start a little repository to cover the frequently asked questions. Ideally this should be shared knowledge base that grows over time. I strongly encourage everyone to contribute to this document. The goal of this document should be to give TDs an overview on how to get started integrating Blender in a Pipeline. You will find useful links, tips and tools that make your life easier!
 
 ## Table of Contents
 - [Starting Blender](#starting-blender)
     - [Command Line Arguments](#command-line-arguments)
     - [Environment Variables](#environment-variables)
 - [Qt](#Qt)
-- [Python Api](#python-api)
+- [Python](#python)
+    - [Python Api](#python-api)
     - [Addons](#addons)
+    - [Scripts](#scripts)
     - [Properties](#properties)
+    - [UI](#ui)
+    - [Handlers](#handlers)
     - [Third-party python modules](#third-party-python-modules)
 - [Developer Tips](#development)
 - [Data handling](#data-handling)
-    - [Data]
+    - [Datablocks](#datablocks)
+    - [Fake User](#fake-user)
 - [IO](#io)
 - [Community](#community)
 
+<!-- "Auto Run Python Scripts"
+"how to make sure python scripts that comes with blender files are executed eg"
+"publishing and versioning what’s the best approach"
+"workflows: animation caching yes or no"
+"fake user"
+"setting up library assets"
+"actions and animations"
+"overrides" (https://code.blender.org/2022/02/overrides-workshop/)
+"blender libraries, relinking"
+"BAT" -->
 
 ## Starting Blender
 
@@ -34,9 +49,9 @@ Please check this link for a more detailed explanation of all the flags.
 
 **Some useful examples:**
 
-- Render .blend file in the background to relative output path, specifying frame counter and output format. Use whole frame range and add file extension to path.
+- Start Blender and execute a python script on startup
     ```
-    blender -b shot.blend -o //render/shot_###### -F OPEN_EXR_MULTILAYER  -x 1 -a
+    blender --python /path/to/script.py
     ```
 
 - Start Blender with list of add-ons enabled in addition to default add-ons
@@ -51,6 +66,11 @@ Please check this link for a more detailed explanation of all the flags.
 - Start Blender but skip processing the Blender user config and scripts directory. Useful to debug if user configuration (addons, startup scripts) is source of error.
     ```
     blender --factory-startup
+    ```
+
+- Render .blend file in the background to relative output path, specifying frame counter and output format. Use whole frame range and add file extension to path.
+    ```
+    blender -b shot.blend -o //render/shot_###### -F OPEN_EXR_MULTILAYER  -x 1 -a
     ```
 
 ### Environment Variables
@@ -74,11 +94,11 @@ To learn more about what you can configure please refer to:
 [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)
 
 
-If you have some sort of software starter at your Studio you can use this variable to supply Artists with some add-ons, start-up scripts and other things that your Studio or Project requires.
+If you have some sort of software starter at your Studio you can use this variable to supply Artists with some add-ons, start-up scripts and other things that your studio or project requires.
 
 > **_NOTE:_** `BLENDER_USER_SCRIPTS` is a single path. Blender does not support a list of search paths yet like you might be used to from other DCCs. Many Pipelines do like to have a directory path for Studio wide tools and scripts and at least another one for only project specific stuff. This is not possible currently. You will need to find a way to work around it.
 
-> **_NOTE:_** Setting `BLENDER_USER_SCRIPTS` results in Users not having their personal add-ons and scripts available that Blender normally loads from a sub path in the Users Home directory (See: [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)). Be aware of that.
+> **_NOTE:_** Setting `BLENDER_USER_SCRIPTS` results in Users not having their personal add-ons and scripts available that Blender normally loads from a sub path in the users home directory (See: [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)). Be aware of that.
 
 ## Qt
 
@@ -94,20 +114,77 @@ But it's still possible to run your Qt Interfaces without blocking Blender. Many
 - [Blender Shotgrid Integration](https://github.com/diegogarciahuerta/tk-blender/blob/d2c21fa53ab861886858388fbdc115e6d4e10a9d/resources/scripts/startup/Shotgun_menu.py#L90)
 - [Blender Avalon Integration](https://gitlab.com/jasperges/avalon-core/-/blob/add-blender28-support/avalon/blender/ops.py)
 
-It basically comes down to starting your own Qt Event Loop and process it's events in a modal Operator.
-To learn more about Modal Operators refer to this link:
+It basically comes down to starting your own Qt Event Loop and process it's events in a modal operator.
+To learn more about modal operators refer to this link:
 
 [Modal Operators](https://docs.blender.org/api/current/bpy.types.Operator.html#modal-execution)
 
-## Python API
+## Python
+
+### Python-Api
 
 Blender has a built in Python API. You can find the official documentation here:
 
 [Blender Python API Documentation](https://docs.blender.org/api/current/index.html)
 
+Make sure to read the introduction articles and gotchas on that page. They will get you started quickly.
 
+A great video series to get started with scripting in Blender is [Scripting for Artists](https://www.youtube.com/watch?v=sOS2ID1ZN3A&list=PL1fkRtMmJ4OOrY20bOVlxn_PFYx9ly97j) by [Sybren Stüvel](https://stuvel.eu/).
+### Addons
+
+The most common way to expose your Python scripts and tools to Artists is through a Blender add-on. It's very easy to create a Blender add-on with Python that can be then enabled and disabled in the user's preferences.
+
+Please refer to this guide here that walks you through the whole process of creating an add-on:
+
+[Addon Tutorial](https://docs.blender.org/manual/en/latest/advanced/scripting/addon_tutorial.html)
+
+### Scripts
+
+At any time you can create or open Python scripts in the Text Editor. From the Text Editor you can also run these scripts and quickly prototype that way.
+
+Another useful feature are startup scripts. To add a script that runs on startup just place them in the blender configuration directory at this subpath:
+
+`./scripts/startup/*.py`
+
+Refer to [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html) if you are unsure where that is.
+
+
+A not very well known feature is that you can enable "register" text data blocks. Which means they will get run when the blend file is loaded.
+
+![image info](./res/images/register_script.jpg)
+
+This is a technique often used by riggers to build UIs for their rig with Python.
+
+To make sure that this text datablock comes with the rig on link/append, you can just create a reference to it in a custom property:
+
+```python
+rig.data['script'] = bpy.data.texts['myscript.py']
+```
+
+Speaking of properties, let's have a look at them in the next section.
+
+### Properties
+
+### UI
+
+People completely new to Blender might not be aware of it so it's worth mentioning that the entire Blender UI is actually defined in Python. That means not only can you use Python to create you own UIs for Blender, you can even modify the existing one and fit it to the need of your Studio without touching any C code.
+
+If you have enabled the `Developer Extras` option in the Preferences (Interface Tab) you can actually right click on any UI item and select `Edit Source`. This will open the python file in Blender the text editor and jump to the line that is responsible for that Element. Really useful!
 
 ## Developer Tips
+If you develop tools for Blender make sure to enable `Developer Extras` and `Python Tooltips` in your Preferences.
+
+![image info](./res/images/developer_extras.jpg)
+
+---
+
+You often want to adjust some properties when writing Python scripts for Blender. To find out how to actually change a property with python, right click on the property and select `Copy Full Data Path` which copies the data path of the property to the clipboard.
+
+
+You can also do it the other way around.
+Open a Info Editor and change any property or perform an action. You will see the action being printed out as a Python command in the Info Editor. Very useful!
+
+---
 
 If you are going to integrate Blender in your pipeline you will be writing your first add-on or script sooner or later. In order to make your life easier consider using the following tools:
 
