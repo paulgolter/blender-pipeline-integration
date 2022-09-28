@@ -138,6 +138,8 @@ Please refer to this guide here that walks you through the whole process of crea
 
 [Addon Tutorial](https://docs.blender.org/manual/en/latest/advanced/scripting/addon_tutorial.html)
 
+You will notice that Blender offers a very powerful way with its add-on architecture for custom extension.
+
 ### Scripts
 
 At any time you can create or open Python scripts in the Text Editor. From the Text Editor you can also run these scripts and quickly prototype that way.
@@ -164,6 +166,53 @@ rig.data['script'] = bpy.data.texts['myscript.py']
 Speaking of properties, let's have a look at them in the next section.
 
 ### Properties
+
+Sooner or later you will run in scenarios in which you deal with some custom data, be it the current shot name, some asset attribute or something else that you want to save on something in your blend file.
+
+In Blender this can be done through [Properties](https://docs.blender.org/api/current/bpy.props.html).
+
+There are many different types of properties that you can can find at the bottom of the link above. Some of them include:
+
+- `BoolProperty`
+- `CollectionProperty`
+- `EnumProperty`
+- `FloatProperty`
+- `StringProperty`
+- `IntProperty`
+- ...
+
+Let's say you have the object `Suzanne` in your scene and you want to add some metadata on it. It as easy as doing this:
+
+```
+bpy.objects["Suzanne"]["fruit"] = "Banana"
+```
+
+Notice that in the object properties panel you will find `my_prop` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` operator that you can find at the top of the tab.
+
+Let's try out some different data types.
+
+```
+bpy.objects["Suzanne"]["shopping_list"] = {"Banana": 99, "Apples": 2, "Coconuts": 42}
+```
+
+Cool so even dictionaries are supported.
+
+But what if we want to have a property that is registered on all Objects?
+
+We then have to register it on:
+
+`bpy.types.Object.
+
+
+Let's check:
+
+ `type(bpy.objects["Suzanne"]["shopping_list"])`
+
+--> `<class 'IdPropertyGroup'>`
+
+You will notice it's not `dict` but part of some `IdProperties`.
+<!-- TODO: Add image  -->
+
 
 ### UI
 
