@@ -167,6 +167,33 @@ Speaking of properties, let's have a look at them in the next section.
 
 ### Properties
 
+
+<!-- Special case: Annotations in classes like Property Groups and Operators
+Blender has some custom logic when registering those properties that it goes through: __annotations__ class attribute and register
+annotated properties: `blender/source/blender/python/intern/bpy_rna.c/srv/home/paul.golter/dev/projects/blender_git/blender/source/blender/python/intern/bpy_rna.c`
+You can't just say:
+bpy.objects["Suzanne"]["shopping_list"] = bpy.props.CollectionProperty()
+Because CollectionProperty() is class and is only supported when registering it as a class attribute.
+
+Everything that inherits from ID and that you can register yourself you need to use the annotation logic to register properties
+```
+BPY_REGISTER_TYPE = Union[
+    bpy.types.Header,
+    bpy.types.KeyingSetInfo,
+    bpy.types.Menu,
+    bpy.types.Operator,
+    bpy.types.Panel,
+    bpy.types.PropertyGroup,
+    bpy.types.RenderEngine,
+    bpy.types.UIList,
+]
+```
+On existing types you need to use dot notation and instance the attribute
+
+Take Care: Don't start mixing brackets on dot notation registered attributes
+
+Blender uses some internal logic to convert custom properties set on instance of object to some type. That enables powerful disply options in the UI (of colors, arrays, etc....). For example dicts will become [IdPropertyGroup](https://docs.blender.org/api/current/idprop.types.html#idprop.types.IDPropertyGroup) -->
+
 Sooner or later you will run in scenarios in which you deal with some custom data, be it the current shot name, some asset attribute or something else that you want to save on something in your blend file.
 
 In Blender this can be done through [Properties](https://docs.blender.org/api/current/bpy.props.html).
