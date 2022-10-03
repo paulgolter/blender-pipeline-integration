@@ -20,14 +20,17 @@ There is not really an official document somewhere that gives you an overview. S
     - [Properties](#properties)
         - [ID Properties](#id-properties)
         - [Type Properties](#type-properties)
+        - [Window Manager Properties](#window-manager-properties)
+    <!-- - [Operators](#operators)
+        - [UI](#operators-in-ui) -->
     - [UI](#ui)
-    - [Handlers](#handlers)
-    - [Third-party python modules](#third-party-python-modules)
+    <!-- - [Handlers](#handlers)
+    - [Third-party python modules](#third-party-python-modules) -->
 - [Developer Tips](#development)
-- [Data handling](#data-handling)
+<!-- - [Data handling](#data-handling)
     - [Datablocks](#datablocks)
-    - [Fake User](#fake-user)
-- [IO](#io)
+    - [Fake User](#fake-user) -->
+<!-- - [IO](#io) -->
 - [Community](#community)
 
 <!-- "Auto Run Python Scripts"
@@ -169,48 +172,11 @@ Speaking of properties, let's have a look at them in the next section.
 
 ### Properties
 
-
-<!-- Special case: Annotations in classes like Property Groups and Operators
-Blender has some custom logic when registering those properties that it goes through: __annotations__ class attribute and register
-annotated properties: `blender/source/blender/python/intern/bpy_rna.c/srv/home/paul.golter/dev/projects/blender_git/blender/source/blender/python/intern/bpy_rna.c`
-You can't just say:
-bpy.objects["Suzanne"]["shopping_list"] = bpy.props.CollectionProperty()
-Because CollectionProperty() is class and is only supported when registering it as a class attribute.
-
-Everything that inherits from ID and that you can register yourself you need to use the annotation logic to register properties
-```
-BPY_REGISTER_TYPE = Union[
-    bpy.types.Header,
-    bpy.types.KeyingSetInfo,
-    bpy.types.Menu,
-    bpy.types.Operator,
-    bpy.types.Panel,
-    bpy.types.PropertyGroup,
-    bpy.types.RenderEngine,
-    bpy.types.UIList,
-]
-```
-On existing types you need to use dot notation and instance the attribute
-
-Take Care: Don't start mixing brackets on dot notation registered attributes
-
-Blender uses some internal logic to convert custom properties set on instance of object to some type. That enables powerful disply options in the UI (of colors, arrays, etc....). For example dicts will become [IdPropertyGroup](https://docs.blender.org/api/current/idprop.types.html#idprop.types.IDPropertyGroup) -->
-
 Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitray data that you want to save on something in your blend file.
 
 In Blender this can be done through [Properties](https://docs.blender.org/api/current/bpy.props.html).
 
-There are many different types of properties that you can can find at the bottom of the link above. Some of them include:
-
-- `BoolProperty`
-- `CollectionProperty`
-- `EnumProperty`
-- `FloatProperty`
-- `StringProperty`
-- `IntProperty`
-- ...
-
-Blender also supports saving some simple python data types on id data bocks.
+Custom properties can be added to any subclass of an `ID`, `Bone` and `PoseBone`.
 
 How you create a custom property, depends on the scenario, which is why it can be a little bit confusing for beginners. As there is not a really a resource out there that explains properties in detail, this section will receive some extra attention.
 
@@ -225,12 +191,12 @@ bpy.data.objects["Suzanne"]["fruit"] = "Banana"
 > **_NOTE:_** We use [] notation here to assign a value to the key 'fruit' as you would do with dictionaries
 
 
-Notice that in the object properties panel you will find `my_prop` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` operator that you can find at the top of the tab.
+Notice that in the object properties panel you will find `fruit` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` operator that you can find at the top of the tab.
 
 
 ![image info](./res/images/property_str.jpg)
 
-Checking out the type, returns `strs` as expeted.
+Checking out the type, returns `str` as expected.
 
 ```python
 type(bpy.objects["Suzanne"]["fruit"])
@@ -286,12 +252,12 @@ Also note another thing. If we click the gear icon we can now select a data `Sub
 ![image info](./res/images/property_list_float_color.jpg)
 
 
-It is **important** to understand that if the data type matches a certain structure, Blender converts it to a built in type that support additional features (subtype, display in the UI, ...). If you want to know exactly what's going down skimm through the [source code](https://github.com/blender/blender/blob/master/source/blender/python/intern/bpy_rna.c#L7506).
+It is **important** to understand that if the data type matches a certain structure, Blender converts it to a built in type that supports additional features (subtype, display in the UI, ...). If you want to know exactly what's going down skimm through the [source code](https://github.com/blender/blender/blob/master/source/blender/python/intern/bpy_rna.c#L7506).
 
 
 ---
 
-Last but not leas let's try what happens when we assign a dictionary as value:
+Last but not least let's try what happens when we assign a dictionary as value:
 
 
 ```python
@@ -311,7 +277,9 @@ Dictionaries are converted to the IDPropertyGroup type. You can still get the di
 bpy.objects["Suzanne"]["shopping_list"].to_dict()
 ```
 
-You can read more about the `IDPropertyGroup` and `IDPropertyArray` type [here](https://docs.blender.org/api/current/idprop.types.html#idprop.types.IDPropertyGroup)
+You can read more about the `IDPropertyGroup` and `IDPropertyArray` type [here](https://docs.blender.org/api/current/idprop.types.html#idprop.types.IDPropertyGroup).
+
+---
 
 #### Type Properties
 
@@ -323,21 +291,227 @@ Rather than registering our property on a single object we will register it on t
 bpy.types.Object.for_export = False
 ```
 
-Notice that we are using the dot notation here, as we are essentially adding a new class attribute to the class `Object`.
+Notice that we are using the dot notation here, as we are essentially adding a new class attribute to the class `Object`. Using brackets would throw an error here.
 
 If we now select any Object in our scene and check the custom properties tab, you will notice nothing is there.
 
-Let's set the property to something else than it's default value
+But if we still try to get that new property:
 
-Let's check:
+```python
+bpy.data.objects["Suzanne"].for_export
+>>> False
+```
 
- `type(bpy.objects["Suzanne"]["shopping_list"])`
+We get the default value we used when initializing it.
 
---> `<class 'IdPropertyGroup'>`
+Let's set the property to something else than it's default value:
 
-You will notice it's not `dict` but part of some `IdProperties`.
-<!-- TODO: Add image  -->
+```python
+bpy.data.objects["Suzanne"].for_export = True
+>>> AttributeError: 'Object' object attribute 'for_export' is read-only
+```
 
+But we still want to be able to change that.
+
+---
+
+When we want to add new properties on a whole type we should use a class that is in the `bpy.props` module. You can find all supported data types [here](https://docs.blender.org/api/current/bpy.props.html).
+
+Let's try that again with:
+
+```python
+bpy.types.Object.for_export = bpy.props.BoolProperty(default=False)
+```
+We can now also change the value of that property for one object:
+
+```python
+bpy.data.objects["Suzanne"].for_export = True
+```
+
+It is generally adviced to work with the properties in the `bpy.props` module because they can do a lot more really useful things!
+
+For example we can define a subtype when we initialize the property, give it a name and a description that will be displayed when users hover it with their mouse.
+
+```python
+bpy.types.Object.export_path = bpy.props.StringProperty(
+    name="Export Path",
+    description="Output path when export script will be executed",
+    subtype="FILE_PATH"
+)
+
+```
+
+Because we specified `subtype="FILE_PATH"` if the property is displayed in the UI it will have a little browse file icon next to it and if you press it users can navigate to a file through the Blender File Browser. The property then gets the filepath of the selected file assigned.
+
+That way we can also not change the property value to another type by accident:
+
+```python
+bpy.context.active_object.export_path = 2
+>>> TypeError: bpy_struct: item.attr = val: Object.export_path expected a string type, not int
+```
+
+---
+
+A very powerful feature is that we can also assign callback functions that are executed when the property is modified, when it gets written or read.
+
+```python
+
+def my_callback(self, context):
+    print(f"Value got updated to: {self.export_path}")
+
+bpy.types.Object.export_path = bpy.props.StringProperty(
+    name="Export Path",
+    description="Output path when export script will be executed",
+    subtype="FILE_PATH",
+    update=my_callback,
+)
+```
+
+Try it out an see what happens.
+
+---
+
+> **_NOTE:_** When registering properties on types with the dot notation don't start to access or set these properties with brackets (object["export_path"]) after that. Otherwise this can get confusing for you and Blender.
+
+>**_In a Pipeline_**: you would usually create those properties in the regisering section of your add-on. That way you can ensure that those properties exist and your add-on can work with them. Try to solve as much as possible with the built-in properties of the `bpy.props` module and register them on a whole type.
+
+Check out the [props.py](https://developer.blender.org/diffusion/BSTS/browse/master/blender-kitsu/blender_kitsu/props.py) module of the blender-kitsu add-on to see an example how this can look.
+
+Please refer to the [Property Definitions](https://docs.blender.org/api/current/bpy.props.html) section of the documentation if you want to learn more about this topic.
+
+#### Annotated Properties
+
+In Blender we can register a range of Blender type classes with:
+
+```python
+bpy.utils.register_class()
+```
+Some of those Blender type classes are:
+
+```
+bpy.types.Header
+bpy.types.KeyingSetInfo
+bpy.types.Menu
+bpy.types.Operator
+bpy.types.Panel
+bpy.types.PropertyGroup
+bpy.types.RenderEngine
+bpy.types.UIList
+```
+
+Those classes can also contain custom properties. But the way we register custom properties on those classes works a little bit different.
+
+Let's have a look at an example operator. Often you want to supply some input to an operator and execute logic depending on the input.
+
+We can define a custom property on an Operator like so:
+
+```python
+import bpy
+from typing import *
+
+class my_OT_custom_operator(bpy.types.Operator):
+    bl_idname = "my.custom_operator"
+    bl_label = "Custom Operator"
+
+    # Define custom property with an Annotation, using : instead of =
+    filepath: bpy.props.StringProperty(name="File Path", subtype="FILE_PATH")
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+
+        # Get filepath and do something
+        filepath = self.filepath
+        print(f"Doing something with this filepath: {self.filepath}")
+
+        # Return
+        return {"FINISHED"}
+
+# Unregister if already registered
+try:
+    bpy.utils.unregister_class(my_OT_custom_operator)
+except:
+    pass
+
+# Register
+bpy.utils.register_class(my_OT_custom_operator)
+
+```
+
+And now we can do the following in a the interactive pyhton console:
+
+```python
+bpy.ops.my.custom_operator(filepath="/tmp/test.txt")
+>>> Doing something with this filepath: /tmp/test.txt
+{'FINISHED'}
+```
+Pretty cool!
+
+So notice that we have to only annotate these properties as class attribtues (with types of `bpy.props). Internally when registering this class Blender actually checks the:
+
+```
+Class.__annotations__
+```
+
+attribute and grabs the annotated properties from there. When you try to initialize a class attribute like so:
+
+```python
+class my_OT_custom_operator(bpy.types.Operator):
+    ...
+    # = instead of :
+    filepath = bpy.props.StringProperty(name="File Path", subtype="FILE_PATH")
+```
+
+You might run in to errors and the class won't register.
+
+That you can actually pass a value for the `filepath` property of our operator as a key word argument in python is some special magic that is done by Blender when registering Operators.
+
+
+> **_NOTE:_** Operators are a very powerful concept, you can learn more about them in the offical [Operator](https://docs.blender.org/api/current/bpy.types.Operator.html) section of the documentation.
+
+
+---
+
+But the annotation rule is the same for a ProperyGroup for example:
+
+```python
+import bpy
+
+class MyPropertyGroup(bpy.types.PropertyGroup):
+
+    # Annotate the properties we want
+    my_float: bpy.props.FloatProperty(name="Some Floating Point")
+    my_bool: bpy.props.BoolProperty(name="Toggle Option")
+    my_string: bpy.props.StringProperty(name="String Value")
+
+# First register our PropertyGroup class
+bpy.utils.register_class(MyPropertyGroup)
+
+# Then actually create a new property the scene type that 'points'
+# to our PropertyGroup
+bpy.types.Scene.my_settings = bpy.props.PointerProperty(type=MyPropertyGroup)
+
+```
+You can now access `my_float` like so:
+
+```python
+bpy.context.scene.my_settings.my_float
+>>> 0.0
+```
+Property Groups are versy useful to as the name says 'group' multiple properties together. You can also nest them in to each other.
+
+>**_In a Pipeline_**: you would usually register one property group on the required type and store all your properties inside that group to keep things nice and tidy!
+
+
+#### Window Manager Properties
+
+The [window manager](https://docs.blender.org/api/current/bpy.types.WindowManager.html) is a Blender data block that defines open windows and other user interface data. Because of it's nature that it is alwyas newly created for a Blender session it offers python sripts a greate place to store very temporary data that will be scrapped when the session ends.
+
+To add a property to the window manager do:
+
+```python
+bpy.context.window_manager["temp_prop"] = 123
+```
+
+This property will be gone when you open a new blend file or reload the current one.
 
 ### UI
 
