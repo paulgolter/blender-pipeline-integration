@@ -99,7 +99,7 @@ To learn more about what you can configure please refer to:
 [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)
 
 
-If you have some sort of software starter at your Studio you can use this variable to supply Artists with some add-ons, start-up scripts and other things that your studio or project requires.
+> **_In a Pipeline:_**: If you have some sort of software starter at your Studio you can use this variable to supply Artists with some add-ons, start-up scripts and other things that your studio or project requires.
 
 > **_NOTE:_** `BLENDER_USER_SCRIPTS` is a single path. Blender does not support a list of search paths yet like you might be used to from other DCCs. Many Pipelines do like to have a directory path for Studio wide tools and scripts and at least another one for only project specific stuff. This is not possible currently. You will need to find a way to work around it.
 
@@ -123,6 +123,9 @@ It basically comes down to starting your own Qt Event Loop and process it's even
 To learn more about modal operators refer to this link:
 
 [Modal Operators](https://docs.blender.org/api/current/bpy.types.Operator.html#modal-execution)
+
+
+<!-- TODO: Add note about difficulties working with current Context and QT, to rather work with bpy.data -->
 
 ## Python
 
