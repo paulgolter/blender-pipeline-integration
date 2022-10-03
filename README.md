@@ -18,6 +18,8 @@ There is not really an official document somewhere that gives you an overview. S
     - [Addons](#addons)
     - [Scripts](#scripts)
     - [Properties](#properties)
+        - [ID Properties](#id-properties)
+        - [Type Properties](#type-properties)
     - [UI](#ui)
     - [Handlers](#handlers)
     - [Third-party python modules](#third-party-python-modules)
@@ -194,7 +196,7 @@ Take Care: Don't start mixing brackets on dot notation registered attributes
 
 Blender uses some internal logic to convert custom properties set on instance of object to some type. That enables powerful disply options in the UI (of colors, arrays, etc....). For example dicts will become [IdPropertyGroup](https://docs.blender.org/api/current/idprop.types.html#idprop.types.IDPropertyGroup) -->
 
-Sooner or later you will run in scenarios in which you deal with some custom data, be it the current shot name, some asset attribute or something else that you want to save on something in your blend file.
+Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitray data that you want to save on something in your blend file.
 
 In Blender this can be done through [Properties](https://docs.blender.org/api/current/bpy.props.html).
 
@@ -208,28 +210,124 @@ There are many different types of properties that you can can find at the bottom
 - `IntProperty`
 - ...
 
+Blender also supports saving some simple python data types on id data bocks.
+
+How you create a custom property, depends on the scenario, which is why it can be a little bit confusing for beginners. As there is not a really a resource out there that explains properties in detail, this section will receive some extra attention.
+
+#### ID Properties
+
 Let's say you have the object `Suzanne` in your scene and you want to add some metadata on it. It as easy as doing this:
 
+```python
+bpy.data.objects["Suzanne"]["fruit"] = "Banana"
 ```
-bpy.objects["Suzanne"]["fruit"] = "Banana"
-```
+
+> **_NOTE:_** We use [] notation here to assign a value to the key 'fruit' as you would do with dictionaries
+
 
 Notice that in the object properties panel you will find `my_prop` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` operator that you can find at the top of the tab.
 
+
+![image info](./res/images/property_str.jpg)
+
+Checking out the type, returns `strs` as expeted.
+
+```python
+type(bpy.objects["Suzanne"]["fruit"])
+>>> str
+```
+
+---
+
 Let's try out some different data types.
 
+```python
+bpy.data.objects["Suzanne"]["favorite_fruits"] = ["Banana", "Coconut", "Mango"]
 ```
-bpy.objects["Suzanne"]["shopping_list"] = {"Banana": 99, "Apples": 2, "Coconuts": 42}
+
+![image info](./res/images/property_list_str.jpg)
+
+Let's see what `type()` returns:
+
+```python
+type(bpy.objects["Suzanne"]["favorite_fruits"])
+>>> <list>
+```
+Notice if the data type was a list containing only strings Blender shows it as 'N Items' in the UI. But we can still edit the value if we press the gear icon:
+
+![image info](./res/images/property_edit_list_str.jpg)
+
+Als notice the type is declared as 'Python'.
+
+---
+
+Instead of using an array of strings let's try what happens when we use as an array of floats.
+
+
+```python
+bpy.data.objects["Suzanne"]["favorite_floats"] = [1.0, 2.0, 3.0]
 ```
 
-Cool so even dictionaries are supported.
+![image info](./res/images/property_list_float.jpg)
 
-But what if we want to have a property that is registered on all Objects?
+Notice that Blender semms to be able to display a FloatArray integrated in the UI.
 
-We then have to register it on:
+Let's check what `type()` returns:
 
-`bpy.types.Object.
+```python
+type(bpy.objects["Suzanne"]["favorite_numbers"])
+>>> <class 'IDPropertyArray'>
+```
 
+Interesting! You might have expected to get `list` as we did before.
+
+Also note another thing. If we click the gear icon we can now select a data `Subtype`. Let's select color. Blender now display the float array as a color gizmo.
+
+![image info](./res/images/property_list_float_color.jpg)
+
+
+It is **important** to understand that if the data type matches a certain structure, Blender converts it to a built in type that support additional features (subtype, display in the UI, ...). If you want to know exactly what's going down skimm through the [source code](https://github.com/blender/blender/blob/master/source/blender/python/intern/bpy_rna.c#L7506).
+
+
+---
+
+Last but not leas let's try what happens when we assign a dictionary as value:
+
+
+```python
+bpy.data.objects["Suzanne"]["shopping_list"] = {"Banana": 99, "Apples": 2, "Coconuts": 42}
+```
+
+Let's see what `type()` returns:
+
+```python
+type(bpy.objects["Suzanne"]["shopping_list"])
+>>> <class 'IDPropertyGroup'>
+```
+
+Dictionaries are converted to the IDPropertyGroup type. You can still get the dictionary with:
+
+```python
+bpy.objects["Suzanne"]["shopping_list"].to_dict()
+```
+
+You can read more about the `IDPropertyGroup` and `IDPropertyArray` type [here](https://docs.blender.org/api/current/idprop.types.html#idprop.types.IDPropertyGroup)
+
+#### Type Properties
+
+But what if we want to have a property that is registered on all Objects. Maybe an attribute `for_export` that is either True or False and controls if this object should be exported by our custom studio exporter.
+
+Rather than registering our property on a single object we will register it on the `Object` type like so:
+
+```python
+bpy.types.Object.for_export = False
+```
+
+Notice that we are using the dot notation here, as we are essentially adding a new class attribute to the class `Object`.
+
+If we now select any Object in our scene and check the custom properties tab, you will notice nothing is there.
+
+Let's set the property to something else than it's default value
 
 Let's check:
 
