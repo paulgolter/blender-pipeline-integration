@@ -12,7 +12,13 @@ There is not really an official document somewhere that gives you an overview. S
 - [Starting Blender](#starting-blender)
     - [Command Line Arguments](#command-line-arguments)
     - [Environment Variables](#environment-variables)
-- [Qt](#Qt)
+- [Qt](#qt)
+- [Data handling](#data-handling)
+    - [Datablocks](#datablocks)
+    - [Fake User](#fake-user)
+    - [Datablocks IO](#datablocks-io)
+    - [Libraries](#libraries)
+    - [Libraries Python Automation](#libraries-python-automation)
 - [Python](#python)
     - [Python Api](#python-api)
     - [Addons](#addons)
@@ -27,9 +33,10 @@ There is not really an official document somewhere that gives you an overview. S
     <!-- - [Handlers](#handlers)
     - [Third-party python modules](#third-party-python-modules) -->
 - [Developer Tips](#development)
-<!-- - [Data handling](#data-handling)
-    - [Datablocks](#datablocks)
-    - [Fake User](#fake-user) -->
+    - [Developer Preferences](#developer-preferences)
+    - [Copy Data Path](#copy-data-path)
+    - [Code Editor](#code-editor)
+    - [Outliner](#outliner-data-api-view)
 <!-- - [IO](#io) -->
 - [Community](#community)
 
@@ -126,6 +133,55 @@ To learn more about modal operators refer to this link:
 
 
 <!-- TODO: Add note about difficulties working with current Context and QT, to rather work with bpy.data -->
+
+## Data Handling
+
+### Datablocks
+
+Understanding roughly how a .blend file is structured will help you a lot in understanding how to handle data in Blender.
+
+You can think of a .blend file a little like a database.
+
+It is composed of [data blocks](https://docs.blender.org/manual/en/latest/files/data_blocks.html) each storing different kinds of data. And these data blocks can reference each other creating some sort of hierarchy.
+
+<img src="./res/images/outliner_data_structure.JPG" style="width:200px;"/>
+
+>**_Tipp:_** This view is available in the Blender Outliner if you switch the display type to: **Blender File**
+
+If you want get in to detail on how a blend file is structured on the C level read this [article](https://www.foro3d.com/f232/article-mystery-of-the-blend-77413.html) by [Jeroen Bakker](https://developer.blender.org/p/jbakker/).
+
+### Fake User
+
+<!-- TODO:  -->
+
+### Datablocks IO
+
+[Datablocks](https://docs.blender.org/manual/en/latest/files/data_blocks.html) can be:
+-  **linked** (live / referenced) or
+- **appended** (imported / copied)
+
+from other .blend files. This [article](https://docs.blender.org/manual/en/latest/files/linked_libraries/link_append.html) documents these two operations in more detail.
+
+
+<p float="left">
+    <img src="./res/images/blender_data_append_folder.JPG" style="width:200px;"/>
+    <img src="./res/images/blender_data_append.JPG" style="width:200px;"/>
+</p>
+
+These two operations will be the back bone for any data going from one .bend file to another.
+
+It is a good idea to make use of linking or appending in any IO situation in which no other software is involved. Of course Blender also supports Alembic, FBX, USD and other formats but importing native Blender data works the best and doesn't loose data (custom properties etc).
+
+#### Libraries
+
+Once you link a datablock from another .blend file that blend file will be referenced as a [Library](https://docs.blender.org/api/current/bpy.types.Library.html).
+
+
+#### Libraries Python Automation
+
+In a Pipeline IO operations are usually automated.
+Blenders Python API provides some useful functions for that that are also documented in the [BlendDataLibraries](https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html) section.
+
 
 ## Python
 
@@ -448,7 +504,7 @@ bpy.ops.my.custom_operator(filepath="/tmp/test.txt")
 ```
 Pretty cool!
 
-So notice that we have to only annotate these properties as class attribtues (with types of `bpy.props). Internally when registering this class Blender actually checks the:
+So notice that we have to only annotate these properties as class attribtues (with types of `bpy.props`). Internally when registering this class Blender actually checks the:
 
 ```
 Class.__annotations__
@@ -499,7 +555,7 @@ You can now access `my_float` like so:
 bpy.context.scene.my_settings.my_float
 >>> 0.0
 ```
-Property Groups are versy useful to as the name says 'group' multiple properties together. You can also nest them in to each other.
+Property Groups are versy useful to, as the name says, 'group' multiple properties together. You can also nest them in to each other.
 
 >**_In a Pipeline_**: you would usually register one property group on the required type and store all your properties inside that group to keep things nice and tidy!
 
@@ -523,11 +579,14 @@ People completely new to Blender might not be aware of it so it's worth mentioni
 If you have enabled the `Developer Extras` option in the Preferences (Interface Tab) you can actually right click on any UI item and select `Edit Source`. This will open the python file in Blender the text editor and jump to the line that is responsible for that Element. Really useful!
 
 ## Developer Tips
+
+#### Developer Preferences
+
 If you develop tools for Blender make sure to enable `Developer Extras` and `Python Tooltips` in your Preferences.
 
 ![image info](./res/images/developer_extras.jpg)
 
----
+#### Copy Data Path
 
 You often want to adjust some properties when writing Python scripts for Blender. To find out how to actually change a property with python, right click on the property and select `Copy Full Data Path` which copies the data path of the property to the clipboard.
 
@@ -535,7 +594,7 @@ You often want to adjust some properties when writing Python scripts for Blender
 You can also do it the other way around.
 Open a Info Editor and change any property or perform an action. You will see the action being printed out as a Python command in the Info Editor. Very useful!
 
----
+#### Code Editor
 
 If you are going to integrate Blender in your pipeline you will be writing your first add-on or script sooner or later. In order to make your life easier consider using the following tools:
 
@@ -543,6 +602,15 @@ If you are going to integrate Blender in your pipeline you will be writing your 
 `
 
 - [Blender Development VSCode Extension](https://marketplace.visualstudio.com/items?itemName=JacquesLucke.blender-development): Really useful extension for Visual Studio Code to make Blender development easier. One of the most important aspect is that it attaches a debugger and you can set breakpoints in your Python code.
+
+<!-- TODO: Add outliner Data API view -->
+
+#### Outliner Data API View
+
+While the interactive python console provides some pretty good autocomplete it is sometimes useful to be able to browse through a data structure in a tree view.
+The **Data API** view of the Blender Outliner provides exactly that. It's super handy to get a quick overview what properties exist.
+
+<img src="./res/images/blender_outliner_data_api.jpg" style="width:400px;"/>
 
 ## Community
 
