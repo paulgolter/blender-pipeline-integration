@@ -222,10 +222,109 @@ You will then be prompted with a file dialog to set the new path of the library.
 
 Blender then replaces all the linked datablocks from the old library with the ones from the new library and tries to retain any overrides you made in the current file.
 
+
 #### Libraries Python Automation
 
 In a Pipeline IO operations are usually automated.
-Blenders Python API provides some useful functions for that that are also documented in the [BlendDataLibraries](https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html) section.
+Blenders Python API provides useful functions for that which are also documented in the [BlendDataLibraries](https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html) section.
+
+Some examples from that link to write datablocks to another .blend file with Python:
+
+```python
+import bpy
+
+filepath = "//new_library.blend"
+
+# write selected objects and their data to a blend file
+data_blocks = set(bpy.context.selected_objects)
+bpy.data.libraries.write(filepath, data_blocks)
+
+
+# write all meshes starting with a capital letter and
+# set them with fake-user enabled so they aren't lost on re-saving
+data_blocks = {mesh for mesh in bpy.data.meshes if mesh.name[:1].isupper()}
+bpy.data.libraries.write(filepath, data_blocks, fake_user=True)
+
+
+# write all materials, textures and node groups to a library
+data_blocks = {*bpy.data.materials, *bpy.data.textures, *bpy.data.node_groups}
+bpy.data.libraries.write(filepath, data_blocks)
+```
+
+---
+
+Loading data blocks from another .blend file works a little bit different. For that you can use:
+
+```python
+with bpy.data.libraries.load(filepath) as (data_from, data_to):
+    # data_from is a representation of bpy.data of the external file
+    # data_to is a representation of bpy.data of the current file
+
+    # except for actual blender type objects the attributes are just lists of strings
+    # e.G data_from.objects: List[str] -> ["Suzanne", "Cube", "Cone", "my_object", ...]
+    scene_names_from_external_lib = data_from.scenes # bpy.data.scenes
+    object_names_from_external_lib = data_from.objects # bpy.data.objects
+    object_names_current_file = data_to.objects
+```
+
+It returns a context manager which exposes 2 library objects on entering.
+The first one is from the external library (data_from) the second one represents the current .blend file (data_to).
+
+
+>**_Note:_**: The variables need to be named `data_from` and `data_to`
+
+
+Both of those library objects are a representation of `bpy.data` of each library.
+The attributes e.G `data_from.objects` are not actual blender type objects but a list of strings.
+
+And to load an object called `Suzanne` from the external library to the current file, you can just append it to:
+`data_to.objects`:
+
+```python
+with bpy.data.libraries.load(filepath) as (data_from, data_to):
+    data_to.objects = ["Suzanne"]
+```
+>**_Note:_**: This only works if the object `Suzanne` also exists in data_to.objects
+
+Here are some more useful examples that are also included in the link above:
+
+```python
+import bpy
+
+filepath = "//link_library.blend"
+
+# load a single scene we know the name of.
+with bpy.data.libraries.load(filepath) as (data_from, data_to):
+    data_to.scenes = ["Scene"]
+
+
+# load all meshes
+with bpy.data.libraries.load(filepath) as (data_from, data_to):
+    data_to.meshes = data_from.meshes
+
+
+# link all objects starting with 'A'
+with bpy.data.libraries.load(filepath, link=True) as (data_from, data_to):
+    data_to.objects = [name for name in data_from.objects if name.startswith("A")]
+
+
+# append everything
+with bpy.data.libraries.load(filepath) as (data_from, data_to):
+    for attr in dir(data_to):
+        setattr(data_to, attr, getattr(data_from, attr))
+
+
+# the loaded objects can be accessed from 'data_to' outside of the context
+# since loading the data replaces the strings for the datablocks or None
+# if the datablock could not be loaded.
+with bpy.data.libraries.load(filepath) as (data_from, data_to):
+    data_to.meshes = data_from.meshes
+# now operate directly on the loaded data
+for mesh in data_to.meshes:
+    if mesh is not None:
+        print(mesh.name)
+
+```
 
 ## Python
 
