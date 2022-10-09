@@ -228,7 +228,7 @@ Blender then replaces all the linked datablocks from the old library with the on
 In a Pipeline IO operations are usually automated.
 Blenders Python API provides useful functions for that which are also documented in the [BlendDataLibraries](https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html) section.
 
-Some examples from that link to write datablocks to another .blend file with Python:
+Below are some examples to **write** datablocks to another .blend file with Python:
 
 ```python
 import bpy
@@ -253,7 +253,7 @@ bpy.data.libraries.write(filepath, data_blocks)
 
 ---
 
-Loading data blocks from another .blend file works a little bit different. For that you can use:
+**Loading** data blocks from another .blend file works a little bit different. For that you can use:
 
 ```python
 with bpy.data.libraries.load(filepath) as (data_from, data_to):
@@ -284,7 +284,7 @@ And to load an object called `Suzanne` from the external library to the current 
 with bpy.data.libraries.load(filepath) as (data_from, data_to):
     data_to.objects = ["Suzanne"]
 ```
->**_Note:_**: This only works if the object `Suzanne` also exists in data_to.objects
+>**_Note:_**: This only works if the object `Suzanne` also exists in data_from.objects
 
 Here are some more useful examples that are also included in the link above:
 
