@@ -1,4 +1,4 @@
-# Integrating Blender in a Production Environment
+# **Integrating Blender in a Production Environment**
 
 `How do we integrate Blender in our Pipeline?`
 
@@ -8,7 +8,7 @@ There is not really an official document that gives an overview about this topic
 
 This document should not be a duplication of the existing documentation but rather a glossary tailored to the question above which will then point to relevant sections of the Blender documentation. It will still provide explanations about topics that are not documented very well or contain best practices that are not known to new users.
 
-## Table of Contents
+## **Table of Contents**
 - [Starting Blender](#starting-blender)
     - [Command Line Arguments](#command-line-arguments)
     - [Environment Variables](#environment-variables)
@@ -30,8 +30,8 @@ This document should not be a duplication of the existing documentation but rath
     <!-- - [Operators](#operators)
         - [UI](#operators-in-ui) -->
     - [UI](#ui)
+    - [Third-Party Python Libraries](#third-party-python-libraries)
     <!-- - [Handlers](#handlers)
-    - [Third-party python modules](#third-party-python-modules) -->
 - [Developer Tips](#development)
     - [Developer Preferences](#developer-preferences)
     - [Copy Data Path](#copy-data-path)
@@ -50,9 +50,9 @@ This document should not be a duplication of the existing documentation but rath
 "blender libraries, relinking"
 "BAT" -->
 
-## Starting Blender
+## **Starting Blender**
 
-### Command Line Arguments
+### **Command Line Arguments**
 
 You can start Blender with several [Command Line Arguments](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html).
 
@@ -84,7 +84,7 @@ Please check this link for a more detailed explanation of all the flags.
     blender -b shot.blend -o //render/shot_###### -F OPEN_EXR_MULTILAYER  -x 1 -a
     ```
 
-### Environment Variables
+### **Environment Variables**
 
 Blender has a very limited range of built int environment variables that control certain aspects.
 
@@ -111,7 +111,7 @@ To learn more about what you can configure please refer to:
 
 > **_NOTE:_** Setting `BLENDER_USER_SCRIPTS` results in Users not having their personal add-ons and scripts available that Blender normally loads from a sub path in the users home directory (See: [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)). Be aware of that.
 
-## Qt
+## **Qt**
 
 Many Studios use [Qt](https://www.qt.io/) to built UIs for their tools.
 As many DCCs actually use Qt themselves, integrating custom Interfaces with some Qt Python binding is usually quite straightforward.
@@ -132,9 +132,9 @@ To learn more about modal operators refer to this link:
 
 <!-- TODO: Add note about difficulties working with current Context and QT, to rather work with bpy.data -->
 
-## Data Handling
+## **Data Handling**
 
-### Datablocks
+### **Datablocks**
 
 Understanding roughly how a .blend file is structured will help you a lot to understand how to handle data in Blender.
 
@@ -148,7 +148,7 @@ It is composed of [data blocks](https://docs.blender.org/manual/en/latest/files/
 
 If you want get in to detail on how a blend file is built on the C level read this [article](https://www.foro3d.com/f232/article-mystery-of-the-blend-77413.html) by [Jeroen Bakker](https://developer.blender.org/p/jbakker/).
 
-### Fake User
+### **Fake User**
 
 The concept of the `Fake User` is something that always leads to confusion for people that are new to Blender.
 
@@ -174,7 +174,7 @@ Or the Python api:
 >>> bpy.data.materials['Material'].use_fake_user = True
 ```
 
-### Datablocks IO
+### **Datablocks IO**
 
 [Datablocks](https://docs.blender.org/manual/en/latest/files/data_blocks.html) can be:
 -  **linked** (live / referenced) or
@@ -192,7 +192,7 @@ These two operations will be the back bone for any data going from one .bend fil
 
 It is a good idea to make use of linking or appending in any IO situation in which no other software is involved. Of course Blender also supports Alembic, FBX, USD and other formats but importing native Blender data works the best and doesn't loose data (custom properties etc).
 
-#### Libraries
+#### **Libraries**
 
 Once you link a datablock from another .blend file that blend file will be referenced as a [Library](https://docs.blender.org/api/current/bpy.types.Library.html).
 
@@ -223,7 +223,7 @@ You will then be prompted with a file dialog to set the new path of the library.
 Blender then replaces all the linked datablocks from the old library with the ones from the new library and tries to retain any overrides you made in the current file.
 
 
-#### Libraries Python Automation
+#### **Libraries Python Automation**
 
 In a Pipeline IO operations are usually automated.
 Blenders Python API provides useful functions for that which are also documented in the [BlendDataLibraries](https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html) section.
@@ -326,9 +326,9 @@ for mesh in data_to.meshes:
 
 ```
 
-## Python
+## **Python**
 
-### Python-Api
+### **Python-Api**
 
 Blender has a built in Python API. You can find the official documentation here:
 
@@ -347,7 +347,7 @@ Please refer to this guide here that walks you through the whole process of crea
 
 You will notice that Blender offers a very powerful way with its add-on architecture for custom extension.
 
-### Scripts
+### **Scripts**
 
 At any time you can create or open Python scripts in the Text Editor. From the Text Editor you can also run these scripts and quickly prototype that way.
 
@@ -372,7 +372,7 @@ To make sure that this text datablock comes with the rig on link/append, you can
 
 Speaking of properties, let's have a look at them in the next section.
 
-### Properties
+### **Properties**
 
 Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitray data that you want to save on something in your blend file.
 
@@ -382,7 +382,7 @@ Custom properties can be added to any subclass of an `ID`, `Bone` and `PoseBone`
 
 How you create a custom property, depends on the scenario, which is why it can be a little bit confusing for beginners. As there is not a really a resource out there that explains properties in detail, this section will receive some extra attention.
 
-#### ID Properties
+#### **ID Properties**
 
 Let's say you have the object `Suzanne` in your scene and you want to add some metadata on it. It as easy as doing this:
 
@@ -483,7 +483,7 @@ You can read more about the `IDPropertyGroup` and `IDPropertyArray` type [here](
 
 ---
 
-#### Type Properties
+#### **Type Properties**
 
 But what if we want to have a property that is registered on all Objects. Maybe an attribute `for_export` that is either True or False and controls if this object should be exported by our custom studio exporter.
 
@@ -581,7 +581,7 @@ Check out the [props.py](https://developer.blender.org/diffusion/BSTS/browse/mas
 
 Please refer to the [Property Definitions](https://docs.blender.org/api/current/bpy.props.html) section of the documentation if you want to learn more about this topic.
 
-#### Annotated Properties
+#### **Annotated Properties**
 
 In Blender we can register a range of Blender type classes with:
 
@@ -703,7 +703,7 @@ Property Groups are versy useful to, as the name says, 'group' multiple properti
 >**_In a Pipeline_**: you would usually register one property group on the required type and store all your properties inside that group to keep things nice and tidy!
 
 
-#### Window Manager Properties
+#### **Window Manager Properties**
 
 The [window manager](https://docs.blender.org/api/current/bpy.types.WindowManager.html) is a Blender data block that defines open windows and other user interface data. Because of it's nature that it is alwyas newly created for a Blender session it offers python sripts a greate place to store very temporary data that will be scrapped when the session ends.
 
@@ -715,21 +715,83 @@ To add a property to the window manager do:
 
 This property will be gone when you open a new blend file or reload the current one.
 
-### UI
+### **UI**
 
 People completely new to Blender might not be aware of it so it's worth mentioning that the entire Blender UI is actually defined in Python. That means not only can you use Python to create you own UIs for Blender, you can even modify the existing one and fit it to the need of your Studio without touching any C code.
 
 If you have enabled the `Developer Extras` option in the Preferences (Interface Tab) you can actually right click on any UI item and select `Edit Source`. This will open the python file in Blender the text editor and jump to the line that is responsible for that Element. Really useful!
 
-## Developer Tips
+### **Third-party Python Libraries**
 
-#### Developer Preferences
+If your add-on or your studio pipeline requires some third party python libraries that are not shipped with Blender Python there are a couple of approaches to solve this issue.
+
+In general it is good to know that you can find the python binary that Blender ships with if you type this command in to Blenders interactive Python console:
+
+```python
+>>> import sys
+>>> sys.executable
+/path/to/blenders/ptyhon
+```
+
+#### **Virtual Environment & PYTHONPATH**
+
+One approach can be to create a virtual environment with the blender python binary and install the library with pip:
+
+```bash
+./python -m venv /path/to/venv
+
+source /path/to/venv/bin/activate
+
+pip3 install library
+```
+
+Then set the **PYTHONPATH** variable to the site-packages directory of your virtual environment.
+
+```bash
+export PYTHONPATH="$PYTHONPATH:/path/to/venv/lib/python3.10/site-packages"
+```
+
+And finally start Blender with the `--python-use-system-env` argument (otherwise PYTHONPATH will be ignored).
+
+```bash
+/path/to/blender --python-use-system-env
+```
+
+#### **Dynamically load wheel files**
+
+Another approach can be to ship the library with your add-on.
+
+The [Blender Cloud Add-on](https://developer.blender.org/diffusion/BCA/repository/master/) has built an example approach to do this.
+
+Check out [this](https://developer.blender.org/diffusion/BCA/browse/master/blender_cloud/wheels/__init__.py) module of the Blender Cloud Add-on that can load external dependencies which are packaged in wheel files.
+
+#### **Add Libraries to Blender installation**
+
+Another way that you will see more often in the internet is that people directly install a library in the Blender installations site-packages directory. I personally don't prefer that approach as I like to keep the Installation clean and untouched.
+
+To do this navigate to the Python binary that ships with Blender.
+
+Make sure pip is available:
+
+```python
+./python -m ensurepip
+```
+
+Install the library with pip:
+
+```python
+./python -m pip install library
+```
+
+## **Developer Tips**
+
+#### **Developer Preferences**
 
 If you develop tools for Blender make sure to enable `Developer Extras` and `Python Tooltips` in your Preferences.
 
 ![image info](./res/images/developer_extras.jpg)
 
-#### Copy Data Path
+#### **Copy Data Path**
 
 You often want to adjust some properties when writing Python scripts for Blender. To find out how to actually change a property with python, right click on the property and select `Copy Full Data Path` which copies the data path of the property to the clipboard.
 
@@ -737,7 +799,7 @@ You often want to adjust some properties when writing Python scripts for Blender
 You can also do it the other way around.
 Open a Info Editor and change any property or perform an action. You will see the action being printed out as a Python command in the Info Editor. Very useful!
 
-#### Code Editor
+#### **Code Editor**
 
 If you are going to integrate Blender in your pipeline you will be writing your first add-on or script sooner or later. In order to make your life easier consider using the following tools:
 
@@ -748,14 +810,14 @@ If you are going to integrate Blender in your pipeline you will be writing your 
 
 <!-- TODO: Add outliner Data API view -->
 
-#### Outliner Data API View
+#### **Outliner Data API View**
 
 While the interactive python console provides some pretty good autocomplete it is sometimes useful to be able to browse through a data structure in a tree view.
 The **Data API** view of the Blender Outliner provides exactly that. It's super handy to get a quick overview what properties exist.
 
 <img src="./res/images/blender_outliner_data_api.jpg" style="width:400px;"/>
 
-## Community
+## **Community**
 
 Blender has a huge community and you can find help in a lot of places. The most important pages are:
 
