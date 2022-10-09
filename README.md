@@ -1,12 +1,12 @@
 # Integrating Blender in a Production Environment
 
-Hey all. In the last year or so I had several discussions about the question:
-
 `How do we integrate Blender in our Pipeline?`
 
 While there are thousands of tutorials out there on how to do this or achieve that in Blender there are hardly any talking about how to use Blender in a Production Pipeline. But for Studios wanting to integrate Blender, this is almost the first question that needs an answer.
 
-There is not really an official document somewhere that gives you an overview. So I though it's time to start a little repository to cover the frequently asked questions. Ideally this should be shared knowledge base that grows over time. I strongly encourage everyone to contribute to this document. The goal of this document should be to give TDs an overview on how to get started integrating Blender in a Pipeline. You will find useful links, tips and tools that make your life easier!
+There is not really an official document that gives an overview about this topic. So it is time to start a repository to cover the frequently asked questions. Ideally this should be a shared knowledge base that grows over time. I strongly encourage everyone to contribute to this document. The goal of this document should be to give TDs an overview on how to get started integrating Blender in a Pipeline. It will contain useful links, explanations and tools that make your life easier!
+
+This document should not be a duplication of the existing documentation but rather a glossary tailored to the question above which will then point to relevant sections of the Blender documentation. It will still provide explanations about topics that are not documented very well or contain best practices that are not known to new users.
 
 ## Table of Contents
 - [Starting Blender](#starting-blender)
@@ -44,7 +44,6 @@ There is not really an official document somewhere that gives you an overview. S
 "how to make sure python scripts that comes with blender files are executed eg"
 "publishing and versioning what’s the best approach"
 "workflows: animation caching yes or no"
-"fake user"
 "setting up library assets"
 "actions and animations"
 "overrides" (https://code.blender.org/2022/02/overrides-workshop/)
@@ -131,14 +130,13 @@ To learn more about modal operators refer to this link:
 
 [Modal Operators](https://docs.blender.org/api/current/bpy.types.Operator.html#modal-execution)
 
-
 <!-- TODO: Add note about difficulties working with current Context and QT, to rather work with bpy.data -->
 
 ## Data Handling
 
 ### Datablocks
 
-Understanding roughly how a .blend file is structured will help you a lot in understanding how to handle data in Blender.
+Understanding roughly how a .blend file is structured will help you a lot to understand how to handle data in Blender.
 
 You can think of a .blend file a little like a database.
 
@@ -148,11 +146,33 @@ It is composed of [data blocks](https://docs.blender.org/manual/en/latest/files/
 
 >**_Tipp:_** This view is available in the Blender Outliner if you switch the display type to: **Blender File**
 
-If you want get in to detail on how a blend file is structured on the C level read this [article](https://www.foro3d.com/f232/article-mystery-of-the-blend-77413.html) by [Jeroen Bakker](https://developer.blender.org/p/jbakker/).
+If you want get in to detail on how a blend file is built on the C level read this [article](https://www.foro3d.com/f232/article-mystery-of-the-blend-77413.html) by [Jeroen Bakker](https://developer.blender.org/p/jbakker/).
 
 ### Fake User
 
-<!-- TODO:  -->
+The concept of the `Fake User` is something that always leads to confusion for people that are new to Blender.
+
+As illustrated in the previous chapter, a `.blend` file contains datablocks. As soon as a datablock is referenced by something, it has a user. If you create a new material and assign it to one object, the material has `1` user, the object.
+
+<img src="./res/images/blender_outliner_material_users.jpg" style="width:200px;"/>
+
+As soon as you close a .blend file, Blender deletes all datablocks that have `0` users. It is essentially a garbage collector to keep your .blend file clean and tidy.
+
+While this can be a nice feature, it can also be confusing if you don't know about it.
+
+What if you still want to keep a datablock even if it is not referenced by something?
+
+You assign a fake user to it. That prevents Blender from deleting the datablock when closing down the file. It is especially important when building up libraries of Materials, Actions or any other data type without having to reference them by something.
+
+You can do this via the UI:
+
+<img src="./res/images/blender_assign_fake_user.jpg" style="width:200px;"/>
+
+
+Or the Python api:
+```python
+>>> bpy.data.materials['Material'].use_fake_user = True
+```
 
 ### Datablocks IO
 
@@ -176,12 +196,36 @@ It is a good idea to make use of linking or appending in any IO situation in whi
 
 Once you link a datablock from another .blend file that blend file will be referenced as a [Library](https://docs.blender.org/api/current/bpy.types.Library.html).
 
+To check which libraries and what datablocks from those libraries are loaded in your blend file go to the `Blender File` category of the Outliner.
+
+<img src="./res/images/blender_outliner_libraries.jpg" style="width:200px;"/>
+
+A [Library](https://docs.blender.org/api/current/bpy.types.Library.html) itself is actually a datablock. To examine it's properties go the `Data API` category or the outliner.
+
+
+<img src="./res/images/blender_outliner_libraries_data.jpg" style="width:200px;"/>
+
+You can also access the loaded libraries via the Python API:
+
+```python
+>>> bpy.data.libraries
+```
+
+
+As in other software packages you change the file that library points to.
+
+>**_In a Pipeline:_**: When a new publish of an asset was made and you want to change the path of the library to point to the latest version.
+
+To achieve this, right click on the library in the `Blender File` view of the Outliner and execute the [Relocate](https://docs.blender.org/api/current/bpy.ops.wm.html#bpy.ops.wm.lib_relocate) operator.
+
+You will then be prompted with a file dialog to set the new path of the library.
+
+Blender then replaces all the linked datablocks from the old library with the ones from the new library and tries to retain any overrides you made in the current file.
 
 #### Libraries Python Automation
 
 In a Pipeline IO operations are usually automated.
 Blenders Python API provides some useful functions for that that are also documented in the [BlendDataLibraries](https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html) section.
-
 
 ## Python
 
@@ -224,7 +268,7 @@ This is a technique often used by riggers to build UIs for their rig with Python
 To make sure that this text datablock comes with the rig on link/append, you can just create a reference to it in a custom property:
 
 ```python
-rig.data['script'] = bpy.data.texts['myscript.py']
+>>> rig.data['script'] = bpy.data.texts['myscript.py']
 ```
 
 Speaking of properties, let's have a look at them in the next section.
@@ -244,7 +288,7 @@ How you create a custom property, depends on the scenario, which is why it can b
 Let's say you have the object `Suzanne` in your scene and you want to add some metadata on it. It as easy as doing this:
 
 ```python
-bpy.data.objects["Suzanne"]["fruit"] = "Banana"
+>>> bpy.data.objects["Suzanne"]["fruit"] = "Banana"
 ```
 
 > **_NOTE:_** We use [] notation here to assign a value to the key 'fruit' as you would do with dictionaries
@@ -258,8 +302,8 @@ Notice that in the object properties panel you will find `fruit` showing up unde
 Checking out the type, returns `str` as expected.
 
 ```python
-type(bpy.objects["Suzanne"]["fruit"])
->>> str
+>>> type(bpy.objects["Suzanne"]["fruit"])
+str
 ```
 
 ---
@@ -267,7 +311,7 @@ type(bpy.objects["Suzanne"]["fruit"])
 Let's try out some different data types.
 
 ```python
-bpy.data.objects["Suzanne"]["favorite_fruits"] = ["Banana", "Coconut", "Mango"]
+>>> bpy.data.objects["Suzanne"]["favorite_fruits"] = ["Banana", "Coconut", "Mango"]
 ```
 
 ![image info](./res/images/property_list_str.jpg)
@@ -275,8 +319,8 @@ bpy.data.objects["Suzanne"]["favorite_fruits"] = ["Banana", "Coconut", "Mango"]
 Let's see what `type()` returns:
 
 ```python
-type(bpy.objects["Suzanne"]["favorite_fruits"])
->>> <list>
+>>> type(bpy.objects["Suzanne"]["favorite_fruits"])
+<list>
 ```
 Notice if the data type was a list containing only strings Blender shows it as 'N Items' in the UI. But we can still edit the value if we press the gear icon:
 
@@ -290,7 +334,7 @@ Instead of using an array of strings let's try what happens when we use as an ar
 
 
 ```python
-bpy.data.objects["Suzanne"]["favorite_floats"] = [1.0, 2.0, 3.0]
+>>> bpy.data.objects["Suzanne"]["favorite_floats"] = [1.0, 2.0, 3.0]
 ```
 
 ![image info](./res/images/property_list_float.jpg)
@@ -300,8 +344,8 @@ Notice that Blender semms to be able to display a FloatArray integrated in the U
 Let's check what `type()` returns:
 
 ```python
-type(bpy.objects["Suzanne"]["favorite_numbers"])
->>> <class 'IDPropertyArray'>
+>>> type(bpy.objects["Suzanne"]["favorite_numbers"])
+<class 'IDPropertyArray'>
 ```
 
 Interesting! You might have expected to get `list` as we did before.
@@ -320,20 +364,20 @@ Last but not least let's try what happens when we assign a dictionary as value:
 
 
 ```python
-bpy.data.objects["Suzanne"]["shopping_list"] = {"Banana": 99, "Apples": 2, "Coconuts": 42}
+>>> bpy.data.objects["Suzanne"]["shopping_list"] = {"Banana": 99, "Apples": 2, "Coconuts": 42}
 ```
 
 Let's see what `type()` returns:
 
 ```python
-type(bpy.objects["Suzanne"]["shopping_list"])
->>> <class 'IDPropertyGroup'>
+>>> type(bpy.objects["Suzanne"]["shopping_list"])
+<class 'IDPropertyGroup'>
 ```
 
 Dictionaries are converted to the IDPropertyGroup type. You can still get the dictionary with:
 
 ```python
-bpy.objects["Suzanne"]["shopping_list"].to_dict()
+>>> bpy.objects["Suzanne"]["shopping_list"].to_dict()
 ```
 
 You can read more about the `IDPropertyGroup` and `IDPropertyArray` type [here](https://docs.blender.org/api/current/idprop.types.html#idprop.types.IDPropertyGroup).
@@ -347,7 +391,7 @@ But what if we want to have a property that is registered on all Objects. Maybe 
 Rather than registering our property on a single object we will register it on the `Object` type like so:
 
 ```python
-bpy.types.Object.for_export = False
+>>> bpy.types.Object.for_export = False
 ```
 
 Notice that we are using the dot notation here, as we are essentially adding a new class attribute to the class `Object`. Using brackets would throw an error here.
@@ -357,8 +401,8 @@ If we now select any Object in our scene and check the custom properties tab, yo
 But if we still try to get that new property:
 
 ```python
-bpy.data.objects["Suzanne"].for_export
->>> False
+>>> bpy.data.objects["Suzanne"].for_export
+False
 ```
 
 We get the default value we used when initializing it.
@@ -366,8 +410,8 @@ We get the default value we used when initializing it.
 Let's set the property to something else than it's default value:
 
 ```python
-bpy.data.objects["Suzanne"].for_export = True
->>> AttributeError: 'Object' object attribute 'for_export' is read-only
+>>> bpy.data.objects["Suzanne"].for_export = True
+AttributeError: 'Object' object attribute 'for_export' is read-only
 ```
 
 But we still want to be able to change that.
@@ -379,12 +423,12 @@ When we want to add new properties on a whole type we should use a class that is
 Let's try that again with:
 
 ```python
-bpy.types.Object.for_export = bpy.props.BoolProperty(default=False)
+>>> bpy.types.Object.for_export = bpy.props.BoolProperty(default=False)
 ```
 We can now also change the value of that property for one object:
 
 ```python
-bpy.data.objects["Suzanne"].for_export = True
+>>> bpy.data.objects["Suzanne"].for_export = True
 ```
 
 It is generally adviced to work with the properties in the `bpy.props` module because they can do a lot more really useful things!
@@ -392,7 +436,7 @@ It is generally adviced to work with the properties in the `bpy.props` module be
 For example we can define a subtype when we initialize the property, give it a name and a description that will be displayed when users hover it with their mouse.
 
 ```python
-bpy.types.Object.export_path = bpy.props.StringProperty(
+>>> bpy.types.Object.export_path = bpy.props.StringProperty(
     name="Export Path",
     description="Output path when export script will be executed",
     subtype="FILE_PATH"
@@ -405,8 +449,8 @@ Because we specified `subtype="FILE_PATH"` if the property is displayed in the U
 That way we can also not change the property value to another type by accident:
 
 ```python
-bpy.context.active_object.export_path = 2
->>> TypeError: bpy_struct: item.attr = val: Object.export_path expected a string type, not int
+>>> bpy.context.active_object.export_path = 2
+TypeError: bpy_struct: item.attr = val: Object.export_path expected a string type, not int
 ```
 
 ---
@@ -498,8 +542,8 @@ bpy.utils.register_class(my_OT_custom_operator)
 And now we can do the following in a the interactive pyhton console:
 
 ```python
-bpy.ops.my.custom_operator(filepath="/tmp/test.txt")
->>> Doing something with this filepath: /tmp/test.txt
+>>> bpy.ops.my.custom_operator(filepath="/tmp/test.txt")
+Doing something with this filepath: /tmp/test.txt
 {'FINISHED'}
 ```
 Pretty cool!
@@ -552,8 +596,8 @@ bpy.types.Scene.my_settings = bpy.props.PointerProperty(type=MyPropertyGroup)
 You can now access `my_float` like so:
 
 ```python
-bpy.context.scene.my_settings.my_float
->>> 0.0
+>>> bpy.context.scene.my_settings.my_float
+0.0
 ```
 Property Groups are versy useful to, as the name says, 'group' multiple properties together. You can also nest them in to each other.
 
@@ -567,7 +611,7 @@ The [window manager](https://docs.blender.org/api/current/bpy.types.WindowManage
 To add a property to the window manager do:
 
 ```python
-bpy.context.window_manager["temp_prop"] = 123
+>>> bpy.context.window_manager["temp_prop"] = 123
 ```
 
 This property will be gone when you open a new blend file or reload the current one.
