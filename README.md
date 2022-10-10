@@ -23,6 +23,7 @@ This document should not be a duplication of the existing documentation but rath
     - [Python Api](#python-api)
     - [Addons](#addons)
     - [Scripts](#scripts)
+    - [Handlers](#handlers)
     - [Properties](#properties)
         - [ID Properties](#id-properties)
         - [Type Properties](#type-properties)
@@ -31,13 +32,15 @@ This document should not be a duplication of the existing documentation but rath
         - [UI](#operators-in-ui) -->
     - [UI](#ui)
     - [Third-Party Python Libraries](#third-party-python-libraries)
-    <!-- - [Handlers](#handlers)
+- [Workflows](#workflows)
+    - _TODO_
+- [IO](#io)
+    - _TODO_
 - [Developer Tips](#development)
     - [Developer Preferences](#developer-preferences)
     - [Copy Data Path](#copy-data-path)
     - [Code Editor](#code-editor)
     - [Outliner](#outliner-data-api-view)
-<!-- - [IO](#io) -->
 - [Community](#community)
 
 <!-- "Auto Run Python Scripts"
@@ -100,16 +103,16 @@ If you worked with other DCCs this variable is similar to `HOUDINI_PATH` or `MAY
 
 `BLENDER_USER_SCRIPTS` is a directory location in which Blender searches for all kinds of files and sub folders to configure the Blender session that is starting up.
 
-To learn more about what you can configure please refer to:
+To learn more about the directory structure of the `BLENDER_USER_SCRIPTS` folder please refer to:
 
 [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)
 
 
 > **_In a Pipeline:_**: If you have some sort of software starter at your Studio you can use this variable to supply Artists with some add-ons, start-up scripts and other things that your studio or project requires.
 
-> **_NOTE:_** `BLENDER_USER_SCRIPTS` is a single path. Blender does not support a list of search paths yet like you might be used to from other DCCs. Many Pipelines do like to have a directory path for Studio wide tools and scripts and at least another one for only project specific stuff. This is not possible currently. You will need to find a way to work around it.
+> **_Note:_** `BLENDER_USER_SCRIPTS` is a single path. Blender does not support a list of search paths yet like you might be used to from other DCCs. Many Pipelines do like to have a directory path for Studio wide tools and scripts and at least another one for only project specific stuff. This is not possible currently. You will need to find a way to work around it.
 
-> **_NOTE:_** Setting `BLENDER_USER_SCRIPTS` results in Users not having their personal add-ons and scripts available that Blender normally loads from a sub path in the users home directory (See: [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)). Be aware of that.
+> **_Note:_** Setting `BLENDER_USER_SCRIPTS` results in Users not having their personal add-ons and scripts available that Blender normally loads from a sub path in the users home directory (See: [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)). Be aware of that.
 
 ## **Qt**
 
@@ -146,13 +149,13 @@ It is composed of [data blocks](https://docs.blender.org/manual/en/latest/files/
 
 >**_Tipp:_** This view is available in the Blender Outliner if you switch the display type to: **Blender File**
 
-If you want get in to detail on how a blend file is built on the C level read this [article](https://www.foro3d.com/f232/article-mystery-of-the-blend-77413.html) by [Jeroen Bakker](https://developer.blender.org/p/jbakker/).
+If you want get in to detail on how a .blend file is built on the C level read this [article](https://www.foro3d.com/f232/article-mystery-of-the-blend-77413.html) by [Jeroen Bakker](https://developer.blender.org/p/jbakker/).
 
 ### **Fake User**
 
 The concept of the `Fake User` is something that always leads to confusion for people that are new to Blender.
 
-As illustrated in the previous chapter, a `.blend` file contains datablocks. As soon as a datablock is referenced by something, it has a user. If you create a new material and assign it to one object, the material has `1` user, the object.
+As illustrated in the previous chapter, a `.blend` file contains datablocks. As soon as a datablock is referenced by something, it has a user. If you create a new material and assign it to one object, the material has `1` user: the object.
 
 <img src="./res/images/blender_outliner_material_users.jpg" style="width:500px;"/>
 
@@ -169,7 +172,7 @@ You can do this via the UI:
 <img src="./res/images/blender_assign_fake_user.jpg" style="width:500px;"/>
 
 
-Or the Python api:
+Or the Python API:
 ```python
 >>> bpy.data.materials['Material'].use_fake_user = True
 ```
@@ -194,7 +197,7 @@ It is a good idea to make use of linking or appending in any IO situation in whi
 
 #### **Libraries**
 
-Once you link a datablock from another .blend file that blend file will be referenced as a [Library](https://docs.blender.org/api/current/bpy.types.Library.html).
+Once you link a datablock from another .blend file that .blend file will be referenced as a [Library](https://docs.blender.org/api/current/bpy.types.Library.html).
 
 To check which libraries and what datablocks from those libraries are loaded in your blend file go to the `Blender File` category of the Outliner.
 
@@ -212,7 +215,7 @@ You can also access the loaded libraries via the Python API:
 ```
 
 
-As in other software packages you change the file that library points to.
+As in other software packages you can change the file to which that library points to.
 
 >**_In a Pipeline:_**: When a new publish of an asset was made and you want to change the path of the library to point to the latest version.
 
@@ -235,7 +238,7 @@ import bpy
 
 filepath = "//new_library.blend"
 
-# write selected objects and their data to a blend file
+# write selected objects and their data to a .blend file
 data_blocks = set(bpy.context.selected_objects)
 bpy.data.libraries.write(filepath, data_blocks)
 
@@ -268,19 +271,20 @@ with bpy.data.libraries.load(filepath) as (data_from, data_to):
 ```
 
 It returns a context manager which exposes 2 library objects on entering.
-The first one is from the external library (data_from) the second one represents the current .blend file (data_to).
+The first one is from the external library (`data_from`) the second one represents the current .blend file (`data_to`).
 
 
->**_Note:_**: The variables need to be named `data_from` and `data_to`
+>**_Note:_**: The variables have to be named `data_from` and `data_to`
 
 
 Both of those library objects are a representation of `bpy.data` of each library.
-The attributes e.G `data_from.objects` are not actual blender type objects but a list of strings.
+But the attributes e.G `data_from.objects` are not actual blender type objects but a list of strings.
 
 And to load an object called `Suzanne` from the external library to the current file, you can just append it to:
 `data_to.objects`:
 
 ```python
+# Import the object "Suzanne" that is in data_from.objects
 with bpy.data.libraries.load(filepath) as (data_from, data_to):
     data_to.objects = ["Suzanne"]
 ```
@@ -339,7 +343,9 @@ Make sure to read the introduction articles and gotchas on that page. They will 
 A great video series to get started with scripting in Blender is [Scripting for Artists](https://www.youtube.com/watch?v=sOS2ID1ZN3A&list=PL1fkRtMmJ4OOrY20bOVlxn_PFYx9ly97j) by [Sybren Stüvel](https://stuvel.eu/).
 ### Addons
 
-The most common way to expose your Python scripts and tools to Artists is through a Blender add-on. It's very easy to create a Blender add-on with Python that can be then enabled and disabled in the user's preferences.
+The most common way to expose your Python scripts and tools to Artists is through a Blender add-on. It's very easy and straightforward to create one. Add-ons can then be enabled and disabled in the user's preferences.
+
+In the beginning it might seem annoying to create a whole add-on for some simple functions, but you will quickly realize, that it is worth it.
 
 Please refer to this guide here that walks you through the whole process of creating an add-on:
 
@@ -349,22 +355,23 @@ You will notice that Blender offers a very powerful way with its add-on architec
 
 ### **Scripts**
 
-At any time you can create or open Python scripts in the Text Editor. From the Text Editor you can also run these scripts and quickly prototype that way.
+At any time you can also just create or open Python scripts in the Text Editor. From the Text Editor you can run these scripts and quickly prototype that way.
 
-Another useful feature are startup scripts. To add a script that runs on startup just place them in the blender configuration directory at this subpath:
+Another useful feature are **startup scripts**. To add a script that runs on startup just place it in the blender configuration directory at this subpath:
 
 `./scripts/startup/*.py`
 
 Refer to [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html) if you are unsure where that is.
 
+---
 
-A not very well known feature is that you can enable "register" text data blocks. Which means they will get run when the blend file is loaded.
+A not very well known feature is that you can enable "register" text data blocks. Which means they will get run when the .blend file is loaded.
 
 <img src="./res/images/register_script.jpg" style="width:500px;"/>
 
 This is a technique often used by riggers to build UIs for their rig with Python.
 
-To make sure that this text datablock comes with the rig on link/append, you can just create a reference to it in a custom property:
+To make sure that this text datablock comes with the rig on **link/append**, you can just create a reference to it in a custom property:
 
 ```python
 >>> rig.data['script'] = bpy.data.texts['myscript.py']
@@ -374,7 +381,7 @@ Speaking of properties, let's have a look at them in the next section.
 
 ### **Properties**
 
-Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitray data that you want to save on something in your blend file.
+Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitrary data that you want to save on something in your .blend file.
 
 In Blender this can be done through [Properties](https://docs.blender.org/api/current/bpy.props.html).
 
@@ -390,7 +397,7 @@ Let's say you have the object `Suzanne` in your scene and you want to add some m
 >>> bpy.data.objects["Suzanne"]["fruit"] = "Banana"
 ```
 
-> **_NOTE:_** We use [] notation here to assign a value to the key 'fruit' as you would do with dictionaries
+> **_Note:_** We use [] notation here to assign a value to the key 'fruit' as you would do with dictionaries
 
 
 Notice that in the object properties panel you will find `fruit` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` operator that you can find at the top of the tab.
@@ -428,7 +435,7 @@ Notice if the data type was a list containing only strings Blender shows it as '
 
 <img src="./res/images/property_edit_list_str.jpg" style="width:400px;"/>
 
-Als notice the type is declared as 'Python'.
+Als notice the type is declared as `Python`.
 
 ---
 
@@ -441,7 +448,7 @@ Instead of using an array of strings let's try what happens when we use as an ar
 
 <img src="./res/images/property_list_float.jpg" style="width:400px;"/>
 
-Notice that Blender seems to be able to display a FloatArray integrated in the UI.
+Notice that Blender seems to be able to display a `FloatArray` integrated in the UI.
 
 Let's check what `type()` returns:
 
@@ -489,7 +496,7 @@ You can read more about the `IDPropertyGroup` and `IDPropertyArray` type [here](
 
 #### **Type Properties**
 
-But what if we want to have a property that is registered on all Objects. Maybe an attribute `for_export` that is either True or False and controls if this object should be exported by our custom studio exporter.
+But what if we want to have a property that is registered on all Objects. Maybe an attribute `for_export` that is either `True` or `False` and controls if this object should be exported by our custom studio exporter.
 
 Rather than registering our property on a single object we will register it on the `Object` type like so:
 
@@ -497,7 +504,7 @@ Rather than registering our property on a single object we will register it on t
 >>> bpy.types.Object.for_export = False
 ```
 
-Notice that we are using the dot notation here, as we are essentially adding a new class attribute to the class `Object`. Using brackets would throw an error here.
+Notice that we are using the dot notation here, as we are essentially adding a new class attribute to the class `Object`. Using brackets `[]` would throw an error here.
 
 If we now select any Object in our scene and check the custom properties tab, you will notice nothing is there.
 
@@ -517,7 +524,7 @@ Let's set the property to something else than it's default value:
 AttributeError: 'Object' object attribute 'for_export' is read-only
 ```
 
-But we still want to be able to change that.
+That doesn't work, as it is marked as `read-only`. But we still want to be able to change that.
 
 ---
 
@@ -536,7 +543,7 @@ We can now also change the value of that property for one object:
 
 It is generally advised to work with the properties in the `bpy.props` module because they can do a lot more really useful things!
 
-For example we can define a subtype when we initialize the property, give it a name and a description that will be displayed when users hover it with their mouse.
+For example we can define a subtype when we initialize the property, give it a name and a description that will be displayed when users hover over it with their mouse.
 
 ```python
 >>> bpy.types.Object.export_path = bpy.props.StringProperty(
@@ -577,7 +584,7 @@ Try it out an see what happens.
 
 ---
 
-> **_NOTE:_** When registering properties on types with the dot notation don't start to access or set these properties with brackets (object["export_path"]) after that. Otherwise this can get confusing for you and Blender.
+> **_Note:_** When registering properties on types with the dot notation don't start to access or set these properties with brackets (object["export_path"]) after that. Otherwise this can get confusing for you and Blender.
 
 >**_In a Pipeline_**: you would usually create those properties in the registering section of your add-on. That way you can ensure that those properties exist and your add-on can work with them. Try to solve as much as possible with the built-in properties of the `bpy.props` module and register them on a whole type.
 
@@ -587,7 +594,7 @@ Please refer to the [Property Definitions](https://docs.blender.org/api/current/
 
 #### **Annotated Properties**
 
-In Blender we can register a range of Blender type classes with:
+In Blender we can register a range of Blender type classes ourselves with:
 
 ```python
 bpy.utils.register_class()
@@ -607,7 +614,7 @@ bpy.types.UIList
 
 Those classes can also contain custom properties. But the way we register custom properties on those classes works a little bit different.
 
-Let's have a look at an example operator. Often you want to supply some input to an operator and execute logic depending on the input.
+Let's have a look at a common example: an [Operator](https://docs.blender.org/api/current/bpy.types.Operator.html). Often you want to supply some input to an Operator and execute logic depending on it.
 
 We can define a custom property on an Operator like so:
 
@@ -668,15 +675,15 @@ class my_OT_custom_operator(bpy.types.Operator):
 
 You might run in to errors and the class won't register.
 
-That you can actually pass a value for the `filepath` property of our operator as a key word argument in python is some special magic that is done by Blender when registering Operators.
+> **_Note:_** That you can actually pass a value for the `filepath` property of our Operator as a key word argument in Python is some special magic that is done by Blender when registering Operators.
 
 
-> **_NOTE:_** Operators are a very powerful concept, you can learn more about them in the official [Operator](https://docs.blender.org/api/current/bpy.types.Operator.html) section of the documentation.
+> **_Note:_** Operators are a very powerful concept, you can learn more about them in the official [Operator](https://docs.blender.org/api/current/bpy.types.Operator.html) section of the documentation.
 
 
 ---
 
-But the annotation rule is the same for a PropertyGroup for example:
+But the annotation rule is the same for a `PropertyGroup` for example:
 
 ```python
 import bpy
@@ -709,7 +716,7 @@ Property Groups are very useful to, as the name says, 'group' multiple propertie
 
 #### **Window Manager Properties**
 
-The [window manager](https://docs.blender.org/api/current/bpy.types.WindowManager.html) is a Blender data block that defines open windows and other user interface data. Because of it's nature that it is always newly created for a Blender session it offers python scripts a great place to store very temporary data that will be scrapped when the session ends.
+The [window manager](https://docs.blender.org/api/current/bpy.types.WindowManager.html) is a Blender data block that defines open windows and other user interface data. Because of it's nature that it is always newly created for a Blender session it offers Python scripts a great place to store very temporary data that will be scrapped when the session ends.
 
 To add a property to the window manager do:
 
@@ -717,7 +724,7 @@ To add a property to the window manager do:
 >>> bpy.context.window_manager["temp_prop"] = 123
 ```
 
-This property will be gone when you open a new blend file or reload the current one.
+This property will be gone when you open a new .blend file or reload the current one.
 
 ### **UI**
 
@@ -727,9 +734,9 @@ If you have enabled the `Developer Extras` option in the Preferences (Interface 
 
 ### **Third-party Python Libraries**
 
-If your add-on or your studio pipeline requires some third party python libraries that are not shipped with Blender Python there are a couple of approaches to solve this issue.
+If your add-on or your studio pipeline requires some third party Python libraries that are not shipped with Blender Python there are a couple of approaches to solve this issue.
 
-In general it is good to know that you can find the python binary that Blender ships with if you type this command in to Blenders interactive Python console:
+In general it is good to know that you can find the Python binary that Blender ships with if you type this command in to Blenders interactive Python console:
 
 ```python
 >>> import sys
@@ -739,7 +746,7 @@ In general it is good to know that you can find the python binary that Blender s
 
 #### **Virtual Environment & PYTHONPATH**
 
-One approach can be to create a virtual environment with the blender python binary and install the library with pip:
+One approach can be to create a virtual environment with the blender Python binary and install the library with pip:
 
 ```bash
 ./python -m venv /path/to/venv
@@ -823,7 +830,7 @@ The **Data API** view of the Blender Outliner provides exactly that. It's super 
 
 Blender has a huge community and you can find help in a lot of places. The most important pages are:
 
-- [developer.blender.org](https://developer.blender.org/): Phabricator front end that actually tracks the whole Blender development. Here you can find all open tasks, planned features, modules and their projects and open bug reports. This is the place to check out if you want to know in real time what's being worked on. **_NOTE:_** Will soon move to [Gitea](https://code.blender.org/2022/07/gitea-diaries-part-1/)
+- [developer.blender.org](https://developer.blender.org/): Phabricator front end that actually tracks the whole Blender development. Here you can find all open tasks, planned features, modules and their projects and open bug reports. This is the place to check out if you want to know in real time what's being worked on. **_Note:_** Will soon move to [Gitea](https://code.blender.org/2022/07/gitea-diaries-part-1/)
 
 - [devtalk.blender.org](https://devtalk.blender.org/): This is a dedicated place for Blender module teams to reach out to contributors and the community. It's a good place to start discussions and ask questions in dedicated thread. You will also find reports of regular meetings amongst the developers. One of the most exciting ones to check out is the [weekly report](https://devtalk.blender.org/c/blender/weekly-updates) what changed in Blender.
 
