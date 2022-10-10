@@ -742,6 +742,33 @@ People completely new to Blender might not be aware of it so it's worth mentioni
 
 If you have enabled the `Developer Extras` option in the Preferences (Interface Tab) you can actually right click on any UI item and select `Edit Source`. This will open the python file in Blender the text editor and jump to the line that is responsible for that Element. Really useful!
 
+---
+
+You will run in situations in which you have to interact with UI Elements/Parts of Blender. For that it is really useful to roughly know how the Windowing System in Blender works.
+
+You can get started by reading the [User Interface](https://docs.blender.org/manual/en/latest/interface/index.html) of the documentation.
+
+In general Blenders UI is composed of [Windows](https://docs.blender.org/api/current/bpy.types.Window.html), [Screens](https://docs.blender.org/api/current/bpy.types.Screen.html), [Areas](https://docs.blender.org/manual/en/latest/interface/window_system/areas.html), [Spaces](https://docs.blender.org/api/current/bpy.types.Space.html#bpy.types.Space) and [Regions](https://docs.blender.org/manual/en/latest/interface/window_system/regions.html).
+
+I can recommend to dig through the `Data API` view of the Outliner to understand how they relate to each other.
+
+You can also play around with the Python API:
+
+```python
+bpy.data.window_managers['WinMan'].windows[0].screen.areas[0].regions[0].type
+```
+
+---
+
+Sometimes it can be useful to force Blender to redraw it's UI. You can achieve that with this function:
+
+```python
+def redraw_ui() -> None:
+    """Forces blender to redraw the UI."""
+    for screen in bpy.data.screens:
+        for area in screen.areas:
+            area.tag_redraw()
+```
 ### **Third-party Python Libraries**
 
 If your add-on or your studio pipeline requires some third party Python libraries that are not shipped with Blender Python there are a couple of approaches to solve this issue.
