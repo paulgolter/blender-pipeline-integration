@@ -338,9 +338,10 @@ Blender has a built in Python API. You can find the official documentation here:
 
 [Blender Python API Documentation](https://docs.blender.org/api/current/index.html)
 
-Make sure to read the introduction articles and gotchas on that page. They will get you started quickly.
+Make sure to read the [Quickstart](https://docs.blender.org/api/current/info_quickstart.html), [Overview](https://docs.blender.org/api/current/info_overview.html), [Gotchas](https://docs.blender.org/api/current/info_gotcha.html) and [Tips and Tricks](https://docs.blender.org/api/current/info_tips_and_tricks.html) on that page. They will get you started.
 
 A great video series to get started with scripting in Blender is [Scripting for Artists](https://www.youtube.com/watch?v=sOS2ID1ZN3A&list=PL1fkRtMmJ4OOrY20bOVlxn_PFYx9ly97j) by [Sybren Stüvel](https://stuvel.eu/).
+
 ### Addons
 
 The most common way to expose your Python scripts and tools to Artists is through a Blender add-on. It's very easy and straightforward to create one. Add-ons can then be enabled and disabled in the user's preferences.
@@ -362,6 +363,15 @@ Another useful feature are **startup scripts**. To add a script that runs on sta
 `./scripts/startup/*.py`
 
 Refer to [Blender’s Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html) if you are unsure where that is.
+
+---
+
+It's good to know that by default Blender does not automatically execute Python scripts. You have to specifically enable it in a [setting](https://docs.blender.org/manual/en/latest/advanced/scripting/security.html#setting-defaults) in the Preferences.
+
+
+If a script wants to execute but `Auto Run Python Scripts` is disabled, you will be warned with a pop-up.
+
+Check out the [Scripting & Security](https://docs.blender.org/manual/en/latest/advanced/scripting/security.html) section for more information.
 
 ---
 
