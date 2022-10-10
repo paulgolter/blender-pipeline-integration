@@ -142,7 +142,7 @@ You can think of a .blend file a little like a database.
 
 It is composed of [data blocks](https://docs.blender.org/manual/en/latest/files/data_blocks.html) each storing different kinds of data. And these data blocks can reference each other creating some sort of hierarchy.
 
-<img src="./res/images/outliner_data_structure.JPG" style="width:200px;"/>
+<img src="./res/images/outliner_data_structure.JPG" style="width:250px;"/>
 
 >**_Tipp:_** This view is available in the Blender Outliner if you switch the display type to: **Blender File**
 
@@ -154,7 +154,7 @@ The concept of the `Fake User` is something that always leads to confusion for p
 
 As illustrated in the previous chapter, a `.blend` file contains datablocks. As soon as a datablock is referenced by something, it has a user. If you create a new material and assign it to one object, the material has `1` user, the object.
 
-<img src="./res/images/blender_outliner_material_users.jpg" style="width:200px;"/>
+<img src="./res/images/blender_outliner_material_users.jpg" style="width:500px;"/>
 
 As soon as you close a .blend file, Blender deletes all datablocks that have `0` users. It is essentially a garbage collector to keep your .blend file clean and tidy.
 
@@ -166,7 +166,7 @@ You assign a fake user to it. That prevents Blender from deleting the datablock 
 
 You can do this via the UI:
 
-<img src="./res/images/blender_assign_fake_user.jpg" style="width:200px;"/>
+<img src="./res/images/blender_assign_fake_user.jpg" style="width:500px;"/>
 
 
 Or the Python api:
@@ -184,8 +184,8 @@ from other .blend files. This [article](https://docs.blender.org/manual/en/lates
 
 
 <p float="left">
-    <img src="./res/images/blender_data_append_folder.JPG" style="width:200px;"/>
-    <img src="./res/images/blender_data_append.JPG" style="width:200px;"/>
+    <img src="./res/images/blender_data_append_folder.JPG" style="width:250px;"/>
+    <img src="./res/images/blender_data_append.JPG" style="width:300px;"/>
 </p>
 
 These two operations will be the back bone for any data going from one .bend file to another.
@@ -198,12 +198,12 @@ Once you link a datablock from another .blend file that blend file will be refer
 
 To check which libraries and what datablocks from those libraries are loaded in your blend file go to the `Blender File` category of the Outliner.
 
-<img src="./res/images/blender_outliner_libraries.jpg" style="width:200px;"/>
+<img src="./res/images/blender_outliner_libraries.jpg" style="width:400px;"/>
 
 A [Library](https://docs.blender.org/api/current/bpy.types.Library.html) itself is actually a datablock. To examine it's properties go the `Data API` category or the outliner.
 
 
-<img src="./res/images/blender_outliner_libraries_data.jpg" style="width:200px;"/>
+<img src="./res/images/blender_outliner_libraries_data.jpg" style="width:400px;"/>
 
 You can also access the loaded libraries via the Python API:
 
@@ -360,7 +360,7 @@ Refer to [Blender’s Directory Layout](https://docs.blender.org/manual/en/lates
 
 A not very well known feature is that you can enable "register" text data blocks. Which means they will get run when the blend file is loaded.
 
-![image info](./res/images/register_script.jpg)
+<img src="./res/images/register_script.jpg" style="width:500px;"/>
 
 This is a technique often used by riggers to build UIs for their rig with Python.
 
@@ -396,7 +396,7 @@ Let's say you have the object `Suzanne` in your scene and you want to add some m
 Notice that in the object properties panel you will find `fruit` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` operator that you can find at the top of the tab.
 
 
-![image info](./res/images/property_str.jpg)
+<img src="./res/images/property_str.jpg" style="width:400px;"/>
 
 Checking out the type, returns `str` as expected.
 
@@ -413,7 +413,8 @@ Let's try out some different data types.
 >>> bpy.data.objects["Suzanne"]["favorite_fruits"] = ["Banana", "Coconut", "Mango"]
 ```
 
-![image info](./res/images/property_list_str.jpg)
+
+<img src="./res/images/property_list_str.jpg" style="width:400px;"/>
 
 Let's see what `type()` returns:
 
@@ -421,9 +422,11 @@ Let's see what `type()` returns:
 >>> type(bpy.objects["Suzanne"]["favorite_fruits"])
 <list>
 ```
+
 Notice if the data type was a list containing only strings Blender shows it as 'N Items' in the UI. But we can still edit the value if we press the gear icon:
 
-![image info](./res/images/property_edit_list_str.jpg)
+
+<img src="./res/images/property_edit_list_str.jpg" style="width:400px;"/>
 
 Als notice the type is declared as 'Python'.
 
@@ -436,9 +439,9 @@ Instead of using an array of strings let's try what happens when we use as an ar
 >>> bpy.data.objects["Suzanne"]["favorite_floats"] = [1.0, 2.0, 3.0]
 ```
 
-![image info](./res/images/property_list_float.jpg)
+<img src="./res/images/property_list_float.jpg" style="width:400px;"/>
 
-Notice that Blender semms to be able to display a FloatArray integrated in the UI.
+Notice that Blender seems to be able to display a FloatArray integrated in the UI.
 
 Let's check what `type()` returns:
 
@@ -451,10 +454,11 @@ Interesting! You might have expected to get `list` as we did before.
 
 Also note another thing. If we click the gear icon we can now select a data `Subtype`. Let's select color. Blender now display the float array as a color gizmo.
 
-![image info](./res/images/property_list_float_color.jpg)
+
+<img src="./res/images/property_list_float_color.jpg" style="width:400px;"/>
 
 
-It is **important** to understand that if the data type matches a certain structure, Blender converts it to a built in type that supports additional features (subtype, display in the UI, ...). If you want to know exactly what's going down skimm through the [source code](https://github.com/blender/blender/blob/master/source/blender/python/intern/bpy_rna.c#L7506).
+It is **important** to understand that if the data type matches a certain structure, Blender converts it to a built in type that supports additional features (subtype, display in the UI, ...). If you want to know exactly what's going down skim through the [source code](https://github.com/blender/blender/blob/master/source/blender/python/intern/bpy_rna.c#L7506).
 
 
 ---
@@ -530,7 +534,7 @@ We can now also change the value of that property for one object:
 >>> bpy.data.objects["Suzanne"].for_export = True
 ```
 
-It is generally adviced to work with the properties in the `bpy.props` module because they can do a lot more really useful things!
+It is generally advised to work with the properties in the `bpy.props` module because they can do a lot more really useful things!
 
 For example we can define a subtype when we initialize the property, give it a name and a description that will be displayed when users hover it with their mouse.
 
@@ -575,7 +579,7 @@ Try it out an see what happens.
 
 > **_NOTE:_** When registering properties on types with the dot notation don't start to access or set these properties with brackets (object["export_path"]) after that. Otherwise this can get confusing for you and Blender.
 
->**_In a Pipeline_**: you would usually create those properties in the regisering section of your add-on. That way you can ensure that those properties exist and your add-on can work with them. Try to solve as much as possible with the built-in properties of the `bpy.props` module and register them on a whole type.
+>**_In a Pipeline_**: you would usually create those properties in the registering section of your add-on. That way you can ensure that those properties exist and your add-on can work with them. Try to solve as much as possible with the built-in properties of the `bpy.props` module and register them on a whole type.
 
 Check out the [props.py](https://developer.blender.org/diffusion/BSTS/browse/master/blender-kitsu/blender_kitsu/props.py) module of the blender-kitsu add-on to see an example how this can look.
 
@@ -638,7 +642,7 @@ bpy.utils.register_class(my_OT_custom_operator)
 
 ```
 
-And now we can do the following in a the interactive pyhton console:
+And now we can do the following in a the interactive Python console:
 
 ```python
 >>> bpy.ops.my.custom_operator(filepath="/tmp/test.txt")
@@ -647,7 +651,7 @@ Doing something with this filepath: /tmp/test.txt
 ```
 Pretty cool!
 
-So notice that we have to only annotate these properties as class attribtues (with types of `bpy.props`). Internally when registering this class Blender actually checks the:
+So notice that we have to only annotate these properties as class attributes (with types of `bpy.props`). Internally when registering this class Blender actually checks the:
 
 ```
 Class.__annotations__
@@ -667,12 +671,12 @@ You might run in to errors and the class won't register.
 That you can actually pass a value for the `filepath` property of our operator as a key word argument in python is some special magic that is done by Blender when registering Operators.
 
 
-> **_NOTE:_** Operators are a very powerful concept, you can learn more about them in the offical [Operator](https://docs.blender.org/api/current/bpy.types.Operator.html) section of the documentation.
+> **_NOTE:_** Operators are a very powerful concept, you can learn more about them in the official [Operator](https://docs.blender.org/api/current/bpy.types.Operator.html) section of the documentation.
 
 
 ---
 
-But the annotation rule is the same for a ProperyGroup for example:
+But the annotation rule is the same for a PropertyGroup for example:
 
 ```python
 import bpy
@@ -698,14 +702,14 @@ You can now access `my_float` like so:
 >>> bpy.context.scene.my_settings.my_float
 0.0
 ```
-Property Groups are versy useful to, as the name says, 'group' multiple properties together. You can also nest them in to each other.
+Property Groups are very useful to, as the name says, 'group' multiple properties together. You can also nest them in to each other.
 
 >**_In a Pipeline_**: you would usually register one property group on the required type and store all your properties inside that group to keep things nice and tidy!
 
 
 #### **Window Manager Properties**
 
-The [window manager](https://docs.blender.org/api/current/bpy.types.WindowManager.html) is a Blender data block that defines open windows and other user interface data. Because of it's nature that it is alwyas newly created for a Blender session it offers python sripts a greate place to store very temporary data that will be scrapped when the session ends.
+The [window manager](https://docs.blender.org/api/current/bpy.types.WindowManager.html) is a Blender data block that defines open windows and other user interface data. Because of it's nature that it is always newly created for a Blender session it offers python scripts a great place to store very temporary data that will be scrapped when the session ends.
 
 To add a property to the window manager do:
 
@@ -730,7 +734,7 @@ In general it is good to know that you can find the python binary that Blender s
 ```python
 >>> import sys
 >>> sys.executable
-/path/to/blenders/ptyhon
+/path/to/blenders/python
 ```
 
 #### **Virtual Environment & PYTHONPATH**
@@ -789,7 +793,7 @@ Install the library with pip:
 
 If you develop tools for Blender make sure to enable `Developer Extras` and `Python Tooltips` in your Preferences.
 
-![image info](./res/images/developer_extras.jpg)
+<img src="./res/images/developer_extras.jpg" style="width:400px;"/>
 
 #### **Copy Data Path**
 
@@ -807,8 +811,6 @@ If you are going to integrate Blender in your pipeline you will be writing your 
 `
 
 - [Blender Development VSCode Extension](https://marketplace.visualstudio.com/items?itemName=JacquesLucke.blender-development): Really useful extension for Visual Studio Code to make Blender development easier. One of the most important aspect is that it attaches a debugger and you can set breakpoints in your Python code.
-
-<!-- TODO: Add outliner Data API view -->
 
 #### **Outliner Data API View**
 
