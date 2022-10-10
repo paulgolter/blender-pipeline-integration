@@ -389,6 +389,84 @@ To make sure that this text datablock comes with the rig on **link/append**, you
 
 Speaking of properties, let's have a look at them in the next section.
 
+
+### **Handlers**
+
+Many DCCs offer hooks to add execution of custom scripts on certain events (on scene load, on post save, frame change, etc).
+
+In Blender you can do all of that with [Handlers](https://docs.blender.org/api/current/bpy.app.handlers.html). Make sure to click on the link and check on what kind of Events you can register handlers.
+
+To add a very basic handler that is always executed on `scene load` you can do this:
+
+```python
+import bpy
+from bpy.app.handlers import persistent
+
+
+@persistent
+def load_handler(dummy):
+    # Set default scene settings:
+    bpy.context.scene.render.resolution_x = 2048
+    bpy.context.scene.render.resolution_y = 858
+
+bpy.app.handlers.load_post.append(load_handler)
+```
+
+>**_Note:_**: By default handlers are freed when loading new files, in some cases you may want the handler stay running across multiple files (when the handler is part of an add-on for example). The `@persistent` decorator can be used for that.
+
+---
+
+It's good practice to also remove handlers in the `unregister()` function of your add-on.
+
+A usual setup looks like this:
+
+```python
+def register():
+    bpy.app.handlers.load_post.append(load_handler)
+
+def unregister():
+    bpy.app.handlers.load_post.remove(load_handler)
+```
+
+---
+
+A not so well known type of handlers are `Draw Handlers`. You can add them to subclasses of [Spaces](https://docs.blender.org/api/current/bpy.types.Space.html).
+
+A draw handler gets executed every time that `Space` is re-drawn (which is 60 times per second on most monitors).
+
+>**_Note:_**: Blender only draws parts of the UI on demand. For example when the mouse is over an `Area` or when the dependency graph triggers an update.
+
+Blender has a whole Python wrapper library to draw your custom UIs directly with openGL.
+
+Check out the documentation of the [GPU Module](https://docs.blender.org/api/current/gpu.html). A very interesting rabbit hole to get lost in.
+
+The [draw.py](https://developer.blender.org/diffusion/BSTS/browse/master/blender-kitsu/blender_kitsu/sqe/draw.py) module of the `blender-kitsu` add-on adds custom color lines on top of video sequence editor strips to indicate a global 'Sequence' that they belong to:
+
+
+<img src="./res/images/opengl_custom_color_overlay.png" style="width:700px;"/>
+
+---
+
+>**_Hack:_**: If you want to force a certain setting to be "unchangeable" by Artists you can abuse draw handlers as a hack.
+
+```python
+
+draw_handlers_fb: List[Callable] = []
+
+def enforce_asset_import_type_handler(_):
+    area = bpy.context.area
+    # Options: ["LINK", "APPEND", "APPEND_REUSE"]
+    if area.spaces.active.params.import_type != "LINK":
+        area.spaces.active.params.import_type = "LINK"
+
+def register():
+    global draw_handlers_fb
+    # Region types: ['HEADER', 'TOOLS', 'TOOL_PROPS', 'WINDOW']
+    handler = bpy.types.SpaceFileBrowser.draw_handler_add(
+            enforce_asset_import_type_handler, (None,), "HEADER", "POST_PIXEL"
+        )
+    draw_handlers_fb.append(handler)
+```
 ### **Properties**
 
 Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitrary data that you want to save on something in your .blend file.
