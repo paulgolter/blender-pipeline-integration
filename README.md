@@ -44,6 +44,7 @@ This document should not be a duplication of the existing documentation but rath
     - [Code Editor](#code-editor)
     - [Outliner](#outliner-data-api-view)
 - [Community](#community)
+- [How to Contribute](#how-to-contribute)
 
 <!-- "Auto Run Python Scripts"
 "how to make sure python scripts that comes with blender files are executed eg"
@@ -991,3 +992,17 @@ Blender has a huge community and you can find help in a lot of places. The most 
 - [blender.chat](https://blender.chat/): One of the most important pages to hang around and get help quickly. This is the official chat platform. It has dedicated [channels](https://blender.chat/directory/channels) for each module. You can think about this like your Studio Slack channel except everything is open. Even all the developers communicate publicly there, it's a great place to be.
 
 - [righclickselect](https://blender.community/c/rightclickselect): This is the place to make feature requests for Blender. Share your idea with the community. Discuss it. Revise it.
+
+
+## **How to Contribute**
+
+This document should be a shared knowledge base so I strongly encourage everyone to contribute to it.
+
+I want to highlight this section of the introduction again:
+
+> _The goal of this document should be to give TDs an overview on how to get started integrating Blender in a Pipeline. This document should not be a duplication of the existing documentation but rather a glossary tailored to the question above which will then point to relevant sections of the Blender documentation. It will still provide explanations about topics that are not documented very well or contain best practices that are not known to new users._
+
+
+If you have an idea for a new section, want to share your knowledge or found a mistake please make use of the [Issues](https://github.com/paulgolter/blender-pipeline-integration/issues) list of this repository. As this is only a single document it makes sense to validate first that other people aren't already working on the same topic.
+
+So please create an issue for a topic that you are interested to write for.
