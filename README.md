@@ -861,6 +861,16 @@ In general it is good to know that you can find the Python binary that Blender s
 /path/to/blenders/python
 ```
 
+#### **Copy Python library to ./scripts/addons/modules**
+
+On startup Blender adds the directory `./scripts/addons/modules` to `sys.path`. This path is relative to the standard local user configuration folder.
+You can just copy the Python library in that folder.
+
+>**_Note:_** Can be overwritten by `$BLENDER_USER_SCRIPTS`.
+
+If you are unsure where that is refer to [Blender Directory Layout](https://docs.blender.org/manual/en/latest/advanced/blender_directory_layout.html)
+
+
 #### **Virtual Environment & PYTHONPATH**
 
 One approach can be to create a virtual environment with the blender Python binary and install the library with pip:
