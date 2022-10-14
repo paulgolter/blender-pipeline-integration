@@ -216,6 +216,7 @@ You can also access the loaded libraries via the Python API:
 >>> bpy.data.libraries
 ```
 
+---
 
 As in other software packages you can change the file to which that library points to.
 
@@ -227,6 +228,32 @@ You will then be prompted with a file dialog to set the new path of the library.
 
 Blender then replaces all the linked datablocks from the old library with the ones from the new library and tries to retain any overrides you made in the current file.
 
+
+Relocating can also be done via the Python API.
+
+To do so it is recommended to call the Operator:
+
+```python
+from pathlib import Path
+
+lib = bpy.data.libraries["my_asset_v001"]
+new_lib_path = Path("/path/to/my_asset_v002.blend")
+
+bpy.ops.wm.lib_relocate(
+    library=lib.name,
+    directory=new_lib_path.parent.as_posix(),
+    filename=new_lib_path.name,
+)
+```
+
+In theory you could also do it like this:
+
+```python
+lib = bpy.data.libraries["my_asset_v001"]
+lib.filepath = "/path/to/my_asset_v002.blend"
+lib.reload()
+```
+But I experienced unstable behavior and therefore rather call the Operator.
 
 #### **Libraries Python Automation**
 
