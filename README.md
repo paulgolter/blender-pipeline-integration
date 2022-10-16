@@ -765,6 +765,33 @@ bpy.ops.object.material_slot_add({"object": bpy.data.objects["Cube"]})
 
 The official documentation on [Overriding Context](https://docs.blender.org/api/current/bpy.ops.html#overriding-context) can also be found here.
 
+#### Operator vs bpy.data
+
+Adding a material slot to an object with Python can also be done without calling an Operator.
+
+In fact many things in Blender can be done without having to call Operators but rather doing them directly via `bpy.data`.
+
+This is in general a **very** good practice to follow as Operators have some issues:
+
+- They just return a Set with info about their exit state
+- They rely on information in the `context` and often it's hard to find out what that information is
+
+Let's look at the example from the [previous](#context-override) chapter and try to solve it in another way.
+
+To add a new empty material slot to an object we can do it directly with:
+
+```python
+bpy.data.objects['Cube'].data.materials.append(None)
+```
+
+Another example would be to create a new material. It is as simple as:
+
+```python
+material = bpy.data.materials.new("my_material")
+```
+
+And the great thing is it returns the newly created material as opposed to the operator `bpy.ops.material.new()`.
+
 ### **Properties**
 
 Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitrary data that you want to save on something in your .blend file.
