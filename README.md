@@ -28,15 +28,20 @@ This document should not be a duplication of the existing documentation but rath
         - [ID Properties](#id-properties)
         - [Type Properties](#type-properties)
         - [Window Manager Properties](#window-manager-properties)
-    <!-- - [Operators](#operators)
-        - [UI](#operators-in-ui) -->
     - [UI](#ui)
     - [Third-Party Python Libraries](#third-party-python-libraries)
 - [Operators](#operators)
+    - [Operator Functions](#operator-functions)
+    - [Built in Operator Properties](#built-in-operator-properties)
+    - [Calling Operators from Python](#calling-operators-from-python)
+    - [Operator Naming Conventions](#operator-naming-conventions)
+    - [Finding Operators in Blender Source Code](#finding-operators-in-blender-source-code)
+    - [Context Override](#context-override)
+    - [Operator vs bpy.data](#operator-vs-bpydata)
 - [Overrides](#overrides)
     - _TODO_
 - [Workflows](#workflows)
-    - [Animation Caches]
+    - _TODO_
 - [IO](#io)
     - _TODO_
 - [Developer Tips](#development)
@@ -48,7 +53,6 @@ This document should not be a duplication of the existing documentation but rath
 - [How to Contribute](#how-to-contribute)
 
 <!-- "Auto Run Python Scripts"
-"how to make sure python scripts that comes with blender files are executed eg"
 "publishing and versioning what’s the best approach"
 "workflows: animation caching yes or no"
 "setting up library assets"
