@@ -558,22 +558,27 @@ bpy.utils.register_class(wm_OT_print_context)
 
 #### **Operator Functions:**
 
-- `poll`: Check if Operator can run. Always runs first, if it returns `False` Operator won't run. If the poll fails the operator will also be greyed out in the UI. Notice that if the Operator is exposed in a UI Panel the poll function will be executed everytime the panel is redrawn. So the check here should not be too complex.
+- `poll`: Check if Operator can run. Always runs first, if it returns `False` Operator won't run. If the poll fails the operator will also be greyed out in the UI. Notice that if the Operator is exposed in a UI Panel the poll function will be executed every time the panel is redrawn. So the check here should not be too complex.
 
 <!-- TODO: Note about cls.test_attr can't be queried in poll function -->
 
 - `execute`:
-The execute function is the main fucntion of the Operator. It is always being executed when calling an Operator from the UI or by Python: `bpy.ops.wm.print_context()`.
-It needs to return a `Set()` that contains a Literal that can be on of these values: `('RUNNING_MODAL', 'CANCELLED', 'FINISHED', 'PASS_THROUGH', 'INTERFACE')`.
+The execute function is the main fucntion of the Operator. It is always being executed when calling an Operator from the UI or by Python.
+It needs to return a `Set()` that contains a Literal. Common values are:
+    - "CANCELLED"
+    - "FINISHED"
+
+        For a full list refer [this](https://docs.blender.org/api/current/bpy.ops.html#calling-operators) link.
+
 
 - `invoke`:
-The invoke function is used to initialize the operator from the context at the moment the operator is called. If an Operator is called from the UI the `invoke` function is being executed by default. So make sure if you reimplement `invoke` to also call `execute` at the end.
+The invoke function is used to initialize the operator from the context at the moment the operator is called. If an Operator is called from the UI the invoke function is being executed by default. So make sure if you reimplement invoke to also call execute at the end.
 The invoke function also has access to the [Event](https://docs.blender.org/api/current/bpy.types.Event.html) object, which contains further information how the Operator was called (mouse position, etc).
 
 #### **Built in Operator Properties:**
 
 - `bl_idname`:
-Has to be a unique ID. Meaning no 2 Operators can share the same `bl_idname`. This ID is also being used in other places. For example when exposing an Operator in the UI the string value of `bl_idname` is used. (`row.operator("wm.print_context")`)
+Has to be a unique ID. Meaning no 2 Operators can share the same bl_idname. This ID is also being used in other places. For example when exposing an Operator in the UI the string value of bl_idname is used. (`row.operator("wm.print_context")`)
 
 - `bl_label`: Is the default Label that is being displayed inside of the button when eposing an Operator in the UI.
 
