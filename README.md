@@ -32,10 +32,11 @@ This document should not be a duplication of the existing documentation but rath
         - [UI](#operators-in-ui) -->
     - [UI](#ui)
     - [Third-Party Python Libraries](#third-party-python-libraries)
+- [Operators](#operators)
 - [Overrides](#overrides)
     - _TODO_
 - [Workflows](#workflows)
-    - _TODO_
+    - [Animation Caches]
 - [IO](#io)
     - _TODO_
 - [Developer Tips](#development)
@@ -497,6 +498,181 @@ def register():
         )
     draw_handlers_fb.append(handler)
 ```
+
+### **Operators**
+
+Operators are a core concept in Blender. Every button you can click in the Blender UI is an Operator. Most of them are defined in the `C` code. It is also possible to register new Operators with Python. You can think of them as a interface between your code and Blender. This is how you can expose your python code in the Blender UI and make it accessible for Users. 
+
+Operators have 3 main functions that you will spend most time working with. There are also others but let's focus on those first. 
+
+Let's look at an example of a very basic Operator. 
+
+For the sake of testing the following script also exposes the Operator in a new Panel in the 3D Viewport.
+
+```python 
+import bpy 
+from pprint import pprint
+
+from typing import Set
+
+class wm_OT_print_context(bpy.types.Operator):
+    bl_idname = "wm.print_context"
+    bl_label = "Print Context"
+    bl_description = "Prints the current context in the Python console"
+    
+    my_attr: bpy.props.BoolProperty()
+    
+    @classmethod
+    def poll(cls, context: bpy.types.Context) -> bool:
+        print("Poll is running")
+        return True
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        # context.copy() creates dictionary out of Context object
+        context_dict = context.copy()
+        pprint(context_dict)
+        return {"FINISHED"}
+    
+    def invoke(self, context, event): 
+        self.report({"INFO"}, "Invoke is running")  
+        return self.execute(context)
+
+class wm_PT_test_panel(bpy.types.Panel):
+    bl_label = "Print Context"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    
+    def draw(self, context): 
+        row = self.layout.row()
+        op = row.operator("wm.print_context")
+
+bpy.utils.register_class(wm_PT_test_panel)
+bpy.utils.register_class(wm_OT_print_context)
+```
+
+**_Note:_** Paste this snippet in the Blender script editor and execute it. Make sure to then run the Operator in the "Print Context" Panel in the 3D Viewport on the right side. Have a look at the Python console! 
+
+#### Operator Functions: 
+
+- `poll`: Check if Operator can run. Always runs first, if it returns `False` Operator won't run. If the poll fails the operator will also be greyed out in the UI. Notice that if the Operator is exposed in a UI Panel the poll function will be executed everytime the panel is redrawn. So the check here should not be too complex. 
+
+<!-- TODO: Note about cls.test_attr can't be queried in poll function -->
+
+- `execute`:
+The execute function is the main fucntion of the Operator. It is always being executed when calling an Operator from the UI or by Python: `bpy.ops.wm.print_context()`.
+It needs to return a `Set()` that contains a Literal that can be on of these values: `('RUNNING_MODAL', 'CANCELLED', 'FINISHED', 'PASS_THROUGH', 'INTERFACE')`.
+
+- `invoke`: 
+The invoke function is used to initialize the operator from the context at the moment the operator is called. If an Operator is called from the UI the `invoke` function is being executed by default. So make sure if you reimplement `invoke` to also call `execute` at the end.
+The invoke function also has access to the [Event](https://docs.blender.org/api/current/bpy.types.Event.html) object, which contains further information how the Operator was called (mouse position, etc). 
+
+#### Built in Operator Properties: 
+
+- `bl_idname`: 
+Has to be a unique ID. Meaning no 2 Operators can share the same `bl_idname`. This ID is also being used in other places. For example when exposing an Operator in the UI the string value of `bl_idname` is used. (`row.operator("wm.print_context")`)
+
+- `bl_label`: Is the default Label that is being displayed inside of the button when eposing an Operator in the UI. 
+
+- `bl_description`: Is the description text being displayed int the pop-up when users hover over an Operator in the UI. 
+
+Besides of those Properties you can aso define: 
+
+- `bl_options`: A set of Literals. Please refer to [Operator Type Flag Items](https://docs.blender.org/api/current/bpy_types_enum_items/operator_type_flag_items.html#rna-enum-operator-type-flag-items) for a full list of options. With those flags you can control if an Operator for example should be undoable, show up in a operator search results and more.  
+
+#### Calling Operators from Python 
+
+When registering an Operator with `bpy.utils.register_class()` the `bl_idname` class attribute indicates the "adress" of the operator. 
+
+Examples: 
+`bl_idname = "wm.print_context"`
+--> bpy.ops.wm.print_context()
+
+`bl_idname = "my_namespace.print_context"`
+--> bpy.ops.my_namespace.print_context()
+
+It needs to contain `1` dot and the prefix is essentially the namespace under which the operator will be registered. 
+
+A not very well known feature is that when calling an operator via Python you can pass additional arguments to it. 
+
+Remember the `invoke` function only being called when an Operator is executed from the UI?
+
+To an Operator you can pass a first positional argument, a Literal amongst `("INVOKE_DEFAULT", "EXEC_DEFAULT")` via Python.
+
+```python
+bpy.ops.wm.print_context("INVOKE_DEFAULT")
+```
+
+Would make sure to call the `invoke` function of the Operator even tough, it is called by Python. 
+
+```python
+bpy.ops.wm.print_context("EXEC_DEFAULT")
+```
+Calls the `execute` function, which is default behavior via Python anyways. 
+
+But what if you want to expose an Operator in the UI and force it to call `execute` instead of the `invoke`? 
+
+That can be done with a setting that is stored on `bpy.types.UILayout`. With our panel from earlier it would look like that: 
+
+```python
+class wm_PT_test_panel(bpy.types.Panel):
+    bl_label = "Print Context"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    
+    def draw(self, context): 
+        row = self.layout.row()
+
+        # From now on `execute` is called for operators
+        self.layout.operator_context = "EXEC_DEFAULT"
+        op = row.operator("wm.print_context")
+
+        # Switch back to invoke default behavior
+        self.layout.operator_context = "INVOKE_DEFAULT"
+        op = row.operator("wm.print_context")
+```
+
+#### Operator Naming Conventions
+
+You propably already noticed that the Operator classes in the example have an interesting naming schema. 
+
+It is adviced the follow the schema otherwise you get warning in the Python console and it is good practice after all. The sames goes for `Panels`, `Menus` and other classes by the way.
+
+The easiest way to understand is starting from the `bl_idname` attribute. 
+
+For our example Opeartor it was: 
+
+```python 
+bl_idname = "wm.print_context"
+```
+
+Therefore the class of our Operator should be called: 
+
+```python
+wm_OT_print_context()
+```
+
+The namespace `wm` before the dot goes to the beginning of the class name. Then we have the type of class which is `OT` for `Operator`. Last but not least the actual name of the Operator `print_context`.
+
+
+#### Finding Operators in Blender Source Code 
+
+Often when calling an operator via Python you will get the error:
+
+```
+[...].poll() failed, context is incorrect
+```
+
+This means the Operator can't find certain information in the `context` argument. 
+To check what keys the Operator expects it is sometimes useful to knwo how to find the Opeartor in the actual Blender source code. 
+
+<!-- Let's say we want to toggle the edit mode for the active object. Lets execute: 
+
+```python
+bpy.ops.object.edit_mode_toggle()
+``` -->
+
+In the Python shell. 
+
 ### **Properties**
 
 Sooner or later you will run in scenarios in which you deal with some custom data, be it some asset attributes that your pipeline requires or really any arbitrary data that you want to save on something in your .blend file.
