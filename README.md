@@ -31,11 +31,11 @@ This document should not be a duplication of the existing documentation but rath
     - [UI](#ui)
     - [Third-Party Python Libraries](#third-party-python-libraries)
 - [Operators](#operators)
-    - [Operator Functions](#operator-functions)
-    - [Built in Operator Properties](#built-in-operator-properties)
-    - [Calling Operators from Python](#calling-operators-from-python)
-    - [Operator Naming Conventions](#operator-naming-conventions)
-    - [Finding Operators in Blender Source Code](#finding-operators-in-blender-source-code)
+    - [Built in Functions](#operator-functions)
+    - [Built in Properties](#built-in-operator-properties)
+    - [Calling from Python](#calling-operators-from-python)
+    - [Naming Conventions](#operator-naming-conventions)
+    - [Finding Operators in Source Code](#finding-operators-in-blender-source-code)
     - [Context Override](#context-override)
     - [Operator vs bpy.data](#operator-vs-bpydata)
 - [Overrides](#overrides)
@@ -554,43 +554,43 @@ bpy.utils.register_class(wm_PT_test_panel)
 bpy.utils.register_class(wm_OT_print_context)
 ```
 
-**_Note:_** Paste this snippet in the Blender script editor and execute it. Make sure to then run the Operator in the "Print Context" Panel in the 3D Viewport on the right side. Have a look at the Python console!
+>**_Note:_** Paste this snippet in the Blender script editor and execute it. Make sure to then run the Operator in the "Print Context" Panel in the 3D Viewport on the right side. Have a look at the Python console!
 
 #### **Operator Functions:**
 
-- `poll`: Check if Operator can run. Always runs first, if it returns `False` Operator won't run. If the poll fails the operator will also be greyed out in the UI. Notice that if the Operator is exposed in a UI Panel the poll function will be executed every time the panel is redrawn. So the check here should not be too complex.
+- **poll**: Check if Operator can run. Always runs first, if it returns `False` Operator won't run. If the poll fails the operator will also be greyed out in the UI. Notice that if the Operator is exposed in a UI Panel the poll function will be executed every time the panel is redrawn. So the check here should not be too complex.
 
 <!-- TODO: Note about cls.test_attr can't be queried in poll function -->
 
-- `execute`:
-The execute function is the main fucntion of the Operator. It is always being executed when calling an Operator from the UI or by Python.
-It needs to return a `Set()` that contains a Literal. Common values are:
+- **execute**:
+The execute function is the main function of the Operator. It is always being executed when calling an Operator from the UI or by Python (by default).
+It needs to return a `Set` that contains a Literal. Common values are:
     - "CANCELLED"
     - "FINISHED"
 
         For a full list refer [this](https://docs.blender.org/api/current/bpy.ops.html#calling-operators) link.
 
 
-- `invoke`:
-The invoke function is used to initialize the operator from the context at the moment the operator is called. If an Operator is called from the UI the invoke function is being executed by default. So make sure if you reimplement invoke to also call execute at the end.
+- **invoke**:
+The invoke function is used to initialize the operator from the context at the moment the operator is called. If an Operator is called from the UI the invoke function is being executed by default. It is usually used to initialize certain values of the Operator. So make sure if you reimplement invoke to also call execute at the end.
 The invoke function also has access to the [Event](https://docs.blender.org/api/current/bpy.types.Event.html) object, which contains further information how the Operator was called (mouse position, etc).
 
 #### **Built in Operator Properties:**
 
-- `bl_idname`:
-Has to be a unique ID. Meaning no 2 Operators can share the same bl_idname. This ID is also being used in other places. For example when exposing an Operator in the UI the string value of bl_idname is used. (`row.operator("wm.print_context")`)
+- **bl_idname**:
+Has to be a unique ID. Meaning no 2 Operators can share the same bl_idname. This ID is also being used in other places. For example when exposing an Operator in the UI the string value of bl_idname is used: `row.operator("wm.print_context")`.
 
-- `bl_label`: Is the default Label that is being displayed inside of the button when eposing an Operator in the UI.
+- **bl_label**: Is the default Label that is being displayed when exposing an Operator in the UI.
 
-- `bl_description`: Is the description text being displayed int the pop-up when users hover over an Operator in the UI.
+- **bl_description**: Is the description text being displayed in the pop-up when users hover over an Operator in the UI.
 
 Besides of those Properties you can aso define:
 
-- `bl_options`: A set of Literals. Please refer to [Operator Type Flag Items](https://docs.blender.org/api/current/bpy_types_enum_items/operator_type_flag_items.html#rna-enum-operator-type-flag-items) for a full list of options. With those flags you can control if an Operator for example should be undoable, show up in a operator search results and more.
+- **bl_options**: A set of Literals. Please refer to [Operator Type Flag Items](https://docs.blender.org/api/current/bpy_types_enum_items/operator_type_flag_items.html#rna-enum-operator-type-flag-items) for a full list of options. With those flags you can control if an Operator for example should be un-doable, show up in a operator search results and more.
 
 #### **Calling Operators from Python**
 
-When registering an Operator with `bpy.utils.register_class()` the `bl_idname` class attribute indicates the "adress" of the operator.
+When registering an Operator with `bpy.utils.register_class()` the `bl_idname` class attribute indicates the "address" of the operator.
 
 Examples:
 
@@ -601,6 +601,8 @@ Examples:
 --> bpy.ops.my_namespace.print_context()
 
 It needs to contain `1` dot and the prefix is essentially the namespace under which the operator will be registered.
+
+---
 
 A not very well known feature is that when calling an operator via Python you can pass additional arguments to it.
 
@@ -622,6 +624,8 @@ Would make sure to call the `invoke` function of the Operator even tough, it is 
 bpy.ops.wm.print_context("EXEC_DEFAULT")
 ```
 Calls the `execute` function, which is default behavior via Python anyways.
+
+---
 
 But what if you want to expose an Operator in the UI and force it to call `execute` instead of the `invoke`?
 
@@ -647,13 +651,13 @@ class wm_PT_test_panel(bpy.types.Panel):
 
 #### **Operator Naming Conventions**
 
-You propably already noticed that the Operator classes in the example have an interesting naming schema.
+You probably already noticed that the Operator classes in the example have an interesting naming schema.
 
-It is adviced the follow the schema otherwise you get warning in the Python console and it is good practice after all. The sames goes for `Panels`, `Menus` and other classes by the way.
+It is advised to follow the schema otherwise you get warnings in the Python console and it is good practice after all. The sames goes for `Panels`, `Menus` and other classes by the way.
 
 The easiest way to understand is starting from the `bl_idname` attribute.
 
-For our example Opeartor it was:
+For our example Operator it was:
 
 ```python
 bl_idname = "wm.print_context"
@@ -669,7 +673,7 @@ The namespace `wm` before the dot goes to the beginning of the class name. Then 
 
 #### **Finding Operators in Blender Source Code**
 
-We can also apply this principle the other way around. Let's say we want to find an Operator in Blender source code, because we want look up why the `poll()` function fails.
+We can also apply this principle the other way around. Let's say we want to find an Operator in the Blender source code, because we want look up why the `poll()` function fails.
 
 To find the Operator:
 ```python
@@ -686,7 +690,7 @@ And as you can see it is defined with that name in [render_shading.cc](https://g
 
 #### **Context Override**
 
-As we already saw earlier when defining our own Operators all the functions have a `context`
+As we already saw earlier when defining our own Operators, all the functions have a `context`
 argument.
 
 The context contains a lot of information that Operators often read.
@@ -704,7 +708,9 @@ Often when calling an operator via Python you will get the error:
 
 This means the Operator can't find certain information in the `context` argument.
 
-To check what keys the Operator expects it is sometimes useful to know how to find the Operator in the actual Blender source code.
+To check what keys the Operator expects, it is sometimes useful to know how to find the Operator in the actual Blender source code, as there is not really another way to find out.
+
+---
 
 Let's say we want to add a new material slot to an object via Python.
 
