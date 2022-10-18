@@ -505,7 +505,7 @@ def register():
 
 ### **Operators**
 
-Operators are a core concept in Blender. Every button you can click in the Blender UI is an Operator. Most of them are defined in the `C` code. It is also possible to register new Operators with Python. You can think of them as a interface between your code and Blender. This is how you can expose your python code in the Blender UI and make it accessible for Users.
+Operators are a core concept in Blender. Most of them are defined in the `C` code. But it is also possible to register new Operators with Python. You can think of them as a interface between your code and Blender. This is how you can expose your Python code in the Blender UI and make it accessible for Users.
 
 Operators have 3 main functions that you will spend most time working with. There are also others but let's focus on those first.
 
