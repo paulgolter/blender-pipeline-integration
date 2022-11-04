@@ -51,6 +51,7 @@ This document should not be a duplication of the existing documentation but rath
     - [Copy Data Path](#copy-data-path)
     - [Code Editor](#code-editor)
     - [Outliner](#outliner-data-api-view)
+    - [Example Scripts](#example-scripts)
 - [Community](#community)
 - [How to Contribute](#how-to-contribute)
 
@@ -1321,6 +1322,15 @@ While the interactive python console provides some pretty good autocomplete it i
 The **Data API** view of the Blender Outliner provides exactly that. It's super handy to get a quick overview what properties exist.
 
 <img src="./res/images/blender_outliner_data_api.jpg" style="width:400px;"/>
+
+
+#### **Example Scripts**
+
+Blender already ships with a bunch of example python scripts. You can find them in the text editor under the "Templates" menu.
+
+<img src="./res/images/script_editor_examples.jpg" style="width:400px;"/>
+
+Very useful to look up certain topics or to build up on.
 
 ## **Community**
 
