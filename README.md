@@ -95,6 +95,8 @@ Please check this link for a more detailed explanation of all the flags.
     blender -b shot.blend -o //render/shot_###### -F OPEN_EXR_MULTILAYER  -x 1 -a
     ```
 
+> **_Note:_** The command line arguments are processed in **order** they are given. Please refer to [this](https://docs.blender.org/manual/en/latest/advanced/command_line/arguments.html#argument-order) for further information.
+
 ### **Environment Variables**
 
 Blender has a very limited range of built int environment variables that control certain aspects.
