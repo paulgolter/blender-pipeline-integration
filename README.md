@@ -421,10 +421,6 @@ To make sure that this text datablock comes with the rig on **link/append**, you
 ```python
 >>> rig.data['script'] = bpy.data.texts['myscript.py']
 ```
-
-Speaking of properties, let's have a look at them in the next section.
-
-
 ### **Handlers**
 
 Many DCCs offer hooks to add execution of custom scripts on certain events (on scene load, on post save, frame change, etc).
@@ -558,7 +554,7 @@ bpy.utils.register_class(wm_OT_print_context)
 
 #### **Operator Functions:**
 
-- **poll**: Check if Operator can run. Always runs first, if it returns `False` Operator won't run. If the poll fails the operator will also be greyed out in the UI. Notice that if the Operator is exposed in a UI Panel the poll function will be executed every time the panel is redrawn. So the check here should not be too complex.
+- **poll**: Check if Operator can run. Always runs first, if it returns `False` Operator won't run. If the poll fails the Operator will also be greyed out in the UI. Notice that if the Operator is exposed in a UI Panel the poll function will be executed every time the panel is redrawn. So the check here should not be too complex.
 
 <!-- TODO: Note about cls.test_attr can't be queried in poll function -->
 
@@ -572,7 +568,7 @@ It needs to return a `Set` that contains a Literal. Common values are:
 
 
 - **invoke**:
-The invoke function is used to initialize the operator from the context at the moment the operator is called. If an Operator is called from the UI the invoke function is being executed by default. It is usually used to initialize certain values of the Operator. So make sure if you reimplement invoke to also call execute at the end.
+The invoke function is used to initialize the Operator from the context at the moment the Operator is called. If an Operator is called from the UI the invoke function is being executed by default. It is usually used to initialize certain values of the Operator. So make sure if you reimplement invoke to also call execute at the end.
 The invoke function also has access to the [Event](https://docs.blender.org/api/current/bpy.types.Event.html) object, which contains further information how the Operator was called (mouse position, etc).
 
 #### **Built in Operator Properties:**
@@ -586,11 +582,11 @@ Has to be a unique ID. Meaning no 2 Operators can share the same bl_idname. This
 
 Besides of those Properties you can aso define:
 
-- **bl_options**: A set of Literals. Please refer to [Operator Type Flag Items](https://docs.blender.org/api/current/bpy_types_enum_items/operator_type_flag_items.html#rna-enum-operator-type-flag-items) for a full list of options. With those flags you can control if an Operator for example should be un-doable, show up in a operator search results and more.
+- **bl_options**: A set of Literals. Please refer to [Operator Type Flag Items](https://docs.blender.org/api/current/bpy_types_enum_items/operator_type_flag_items.html#rna-enum-operator-type-flag-items) for a full list of options. With those flags you can control if an Operator for example should be un-doable, show up in a Operator search results and more.
 
 #### **Calling Operators from Python**
 
-When registering an Operator with `bpy.utils.register_class()` the `bl_idname` class attribute indicates the "address" of the operator.
+When registering an Operator with `bpy.utils.register_class()` the `bl_idname` class attribute indicates the "address" of the Operator.
 
 Examples:
 
@@ -600,11 +596,11 @@ Examples:
 - `bl_idname = "my_namespace.print_context"`
 --> bpy.ops.my_namespace.print_context()
 
-It needs to contain `1` dot and the prefix is essentially the namespace under which the operator will be registered.
+It needs to contain `1` dot and the prefix is essentially the namespace under which the Operator will be registered.
 
 ---
 
-A not very well known feature is that when calling an operator via Python you can pass additional arguments to it.
+A not very well known feature is that when calling an Operator via Python, you can pass additional arguments to it.
 
 Remember the `invoke` function only being called when an Operator is executed from the UI?
 
@@ -695,12 +691,12 @@ argument.
 
 The context contains a lot of information that Operators often read.
 
-For example the Operator `bpy.ops.object.material_slot_add()` adds a new material slot to the object that is being worked on. And which object that is, is stored in the context.
+For example the Operator `bpy.ops.object.material_slot_add()` adds a new material slot to the object that is being worked on. The Operator accesses the context object to find the object to operate on.
 
 Refer to [Context Access](https://docs.blender.org/api/current/bpy.context.html) to get an overview of what can be in there or use our Operator we built in the previous [section](#operators).
 
 
-Often when calling an operator via Python you will get the error:
+Often when calling an Operator via Python you will get the error:
 
 ```
 [...].poll() failed, context is incorrect
@@ -805,7 +801,7 @@ Another example would be to create a new material. It is as simple as:
 material = bpy.data.materials.new("my_material")
 ```
 
-And the great thing is it returns the newly created material as opposed to the operator `bpy.ops.material.new()`.
+And the great thing is it returns the newly created material as opposed to the Operator `bpy.ops.material.new()`.
 
 ### **Properties**
 
@@ -828,7 +824,7 @@ Let's say you have the object `Suzanne` in your scene and you want to add some m
 > **_Note:_** We use [] notation here to assign a value to the key 'fruit' as you would do with dictionaries
 
 
-Notice that in the object properties panel you will find `fruit` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` operator that you can find at the top of the tab.
+Notice that in the object properties panel you will find `fruit` showing up under the `Custom Properties` tab. So the command above is essentially the same as using the `bpy.ops.wm.properties_add()` Operator that you can find at the top of the tab.
 
 
 <img src="./res/images/property_str.jpg" style="width:400px;"/>
