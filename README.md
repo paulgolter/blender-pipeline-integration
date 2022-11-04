@@ -29,6 +29,7 @@ This document should not be a duplication of the existing documentation but rath
         - [Type Properties](#type-properties)
         - [Annotated Properties](#annotated-properties)
         - [Window Manager Properties](#window-manager-properties)
+        - [Properties and Overrides](#properties-and-overrides)
     - [UI](#ui)
     - [Third-Party Python Libraries](#third-party-python-libraries)
 - [Operators](#operators)
@@ -1152,6 +1153,37 @@ To add a property to the window manager do:
 ```
 
 This property will be gone when you open a new .blend file or reload the current one.
+
+#### **Properties and Overrides**
+
+By default newly defined properties do not support overrides.
+
+That means if you defined a property on e.G an object and you link that object in another blend file, add a library override to it, you can't change the value of that property.
+
+```python
+cache_path: bpy.props.StringProperty(
+    name="Cache Path",
+    subtype="FILE_PATH",
+)
+```
+
+To enable overrides you have to supply some special flags to the property:
+
+```python
+cache_path: bpy.props.StringProperty(
+    name="Cache Path",
+    subtype="FILE_PATH",
+    options={"LIBRARY_EDITABLE"},
+    override={"LIBRARY_OVERRIDABLE"},
+)
+```
+
+One **important** note:
+
+You can have nested property structures, for example a [PropertyGroup](https://docs.blender.org/api/current/bpy.props.html#propertygroup-example) that contains a [PointerProperty](https://docs.blender.org/api/current/bpy.props.html#bpy.props.PointerProperty) which points to another PropertyGroup etc.
+
+If you have a property inside a nested property group that should be overridable, you have to make sure to add the above flags to all properties in the hierarchy.
+In this case to all pointer properties and also to the main pointer property that registers the top most property group.
 
 ### **UI**
 
