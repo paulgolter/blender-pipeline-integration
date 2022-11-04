@@ -537,7 +537,7 @@ class wm_OT_print_context(bpy.types.Operator):
         pprint(context_dict)
         return {"FINISHED"}
 
-    def invoke(self, context, event):
+    def invoke(self, context: context: bpy.types.Context, event: bpy.types.Event) -> Set[str]:
         self.report({"INFO"}, "Invoke is running")
         return self.execute(context)
 
@@ -546,7 +546,7 @@ class wm_PT_test_panel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         row = self.layout.row()
         op = row.operator("wm.print_context")
 
@@ -637,7 +637,7 @@ class wm_PT_test_panel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         row = self.layout.row()
 
         # From now on `execute` is called for operators
