@@ -2,7 +2,7 @@
 
 `How do we integrate Blender in our Pipeline?`
 
-While there are thousands of tutorials out there on how to do this or achieve that in Blender there are hardly any talking about how to use Blender in a Production Pipeline. But for Studios wanting to integrate Blender, this is almost the first question that needs an answer.
+While there are thousands of tutorials out there on how to create something in Blender there are hardly any on how to use Blender in a Production Pipeline. But for Studios wanting to integrate Blender, this is almost the first question that needs an answer.
 
 There is not really an official document that gives an overview about this topic. So it is time to start a repository to cover the frequently asked questions. Ideally this should be a shared knowledge base that grows over time. I strongly encourage everyone to contribute to this document. The goal of this document should be to give TDs an overview on how to get started integrating Blender in a Pipeline. It will contain useful links, explanations and tools that make your life easier!
 
