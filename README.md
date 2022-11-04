@@ -27,6 +27,7 @@ This document should not be a duplication of the existing documentation but rath
     - [Properties](#properties)
         - [ID Properties](#id-properties)
         - [Type Properties](#type-properties)
+        - [Annotated Properties](#annotated-properties)
         - [Window Manager Properties](#window-manager-properties)
     - [UI](#ui)
     - [Third-Party Python Libraries](#third-party-python-libraries)
